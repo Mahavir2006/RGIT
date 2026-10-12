@@ -808,3 +808,6 @@ npm run dev
 Open <http://localhost:4199/> for the WebGL site or <http://localhost:4199/overview> for the
 operations console. The frontend's local search and WebSocket features are served by its Node
 server; the FastAPI backend remains available separately on port 8000.
+
+The console navigation includes **Dam Failure**, which opens the companion scenario at
+<https://yekyahai.vercel.app/>. It uses the current tab, so browser Back returns to the console.

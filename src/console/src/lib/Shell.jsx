@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Map, ListChecks, TriangleAlert, GitBranch, Waypoints,
   Rows3, Database, Settings, PanelLeftClose, PanelLeft, Search, Bell,
-  LogOut, ChevronDown, Check, Moon, Sun, ChefHat, Share2
+  LogOut, ChevronDown, Check, Moon, Sun, ChefHat, Share2, Waves
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button, Input, Badge } from '@/components/ui';
@@ -23,6 +23,7 @@ const GROUPS = [
     label: 'Operate',
     items: [
       { to: '/overview', label: 'Overview', icon: LayoutDashboard },
+      { href: 'https://yekyahai.vercel.app/', label: 'Dam Failure', icon: Waves, external: true },
       { to: '/operations', label: 'Live operations', icon: Map },
       { to: '/response', label: 'Response center', icon: ListChecks }
     ]
@@ -85,6 +86,18 @@ export function ModeIndicator() {
 // Only actionable items get a badge; navigation counts are noise.
 function NavItem({ item, collapsed, actionable }) {
   const location = useLocation();
+  if (item.external) {
+    return (
+      <a
+        href={item.href}
+        title={collapsed ? item.label : undefined}
+        className="group relative flex h-8 items-center gap-2.5 rounded-[6px] px-2.5 text-[13px] text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg"
+      >
+        <item.icon className="size-4 shrink-0 text-fg-subtle" />
+        {!collapsed && <span className="truncate">{item.label}</span>}
+      </a>
+    );
+  }
   const active = location.pathname === item.to
     || (item.to !== '/incidents' && location.pathname.startsWith(`${item.to}/`))
     || (item.to === '/incidents' && /^\/incidents\/.+\/(evidence|cascade)$/.test(location.pathname));
