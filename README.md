@@ -808,3 +808,21 @@ See `.env.example`. Important flags:
 - `URBAN_SENTINEL_REVIEW_TOKEN` — required for review POST
 - `NEO4J_URI` / `NEO4J_PASSWORD` — optional; degraded mode if unreachable
 - `URBAN_SENTINEL_MAX_GRAPH_DEPTH`, timeouts, and retry bounds
+
+## Frontend
+
+The Daily Design .Art site and Urban Sentinel console are in the repository root. Install and
+run them with Node.js 20 or newer:
+
+```bash
+npm ci
+npm run build
+npm run dev
+```
+
+Open <http://localhost:4199/> for the WebGL site or <http://localhost:4199/overview> for the
+operations console. The frontend's local search and WebSocket features are served by its Node
+server; the FastAPI backend remains available separately on port 8000.
+
+The console navigation includes **Dam Failure**, which opens the companion scenario at
+<https://yekyahai.vercel.app/>. It uses the current tab, so browser Back returns to the console.

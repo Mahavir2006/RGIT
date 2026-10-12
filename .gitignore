@@ -31,3 +31,8 @@ htmlcov/
 .idea/
 .vscode/
 *.log
+
+# --- frontend --------------------------------------------------------------
+node_modules/
+.artifacts/
+.DS_Store
