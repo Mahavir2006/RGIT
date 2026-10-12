@@ -1,12 +1,17 @@
 from __future__ import annotations
 
+import hashlib
+import secrets
+
 from fastapi import APIRouter, Depends, HTTPException
+from urban_sentinel.intelligence.models import DepartmentReportStatus
 
 from urban_sentinel.api.deps import get_service, require_reviewer
 from urban_sentinel.api.schemas import DepartmentReportRouteRequest, DepartmentReportSubmitRequest, ReviewRequest
 from urban_sentinel.domain.departments import departments_by_id
 from urban_sentinel.domain.models import ReviewDecision
 from urban_sentinel.intelligence.service import IntelligenceService
+from urban_sentinel.intelligence.department_delivery import deliver_report
 
 router = APIRouter(prefix="/api/v1/incidents", tags=["incidents"])
 
@@ -79,9 +84,27 @@ async def submit_department_report(
     report = service.operational.submit_department_report(incident_id, report_id, actor=actor)
     if report is None:
         raise HTTPException(status_code=409, detail="Report needs a valid department recipient before submission")
+    status_token = secrets.token_urlsafe(32)
+    service.operational.set_report_status_token(report_id, hashlib.sha256(status_token.encode()).hexdigest())
+    try:
+        report = await deliver_report(service, report, actor=actor)
+    except ValueError as exc:
+        report = service.operational.update_department_report(
+            incident_id, report_id, status=DepartmentReportStatus.DELIVERY_FAILED,
+            delivery_status="failed", delivery_error=str(exc), actor=actor,
+        ) or report
     return {
         "report": report.model_dump(mode="json"),
-        "message": "Queued in the internal report store. External department delivery is not configured.",
+        "resident_status_token": status_token,
+        "resident_status_url": (
+            f"{service.settings.public_web_base_url.rstrip('/')}/track-report#{status_token}"
+            if service.settings.public_web_base_url else None
+        ),
+        "message": (
+            "Report delivered to the configured department webhook."
+            if report.delivery_status == "delivered"
+            else "Report is durably stored, but department delivery is not confirmed."
+        ),
     }
 
 

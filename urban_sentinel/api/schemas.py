@@ -3,6 +3,7 @@ from __future__ import annotations
 from pydantic import BaseModel, Field
 
 from urban_sentinel.domain.models import ProcessedWorkflowInput, ReviewDecision
+from urban_sentinel.intelligence.models import DepartmentReportStatus
 
 
 class AnalyzeRequest(BaseModel):
@@ -30,3 +31,8 @@ class DepartmentReportRouteRequest(BaseModel):
 
 class DepartmentReportSubmitRequest(BaseModel):
     confirm: bool
+
+
+class DepartmentReportStatusRequest(BaseModel):
+    status: DepartmentReportStatus
+    external_reference: str | None = None

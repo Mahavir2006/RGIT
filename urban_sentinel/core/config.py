@@ -18,6 +18,14 @@ class Settings(BaseSettings):
     urban_sentinel_api_host: str = "0.0.0.0"
     urban_sentinel_api_port: int = 8000
     urban_sentinel_review_token: str = "change-me"
+    urban_sentinel_report_store_path: str = "urban_sentinel_reports.sqlite3"
+    urban_sentinel_department_webhooks: str = "{}"
+    urban_sentinel_department_webhook_tokens: str = "{}"
+    urban_sentinel_department_webhook_token: str | None = None
+    urban_sentinel_department_update_tokens: str = "{}"
+    urban_sentinel_department_update_token: str | None = None
+    urban_sentinel_public_api_base_url: str | None = None
+    urban_sentinel_public_web_base_url: str | None = None
 
     urban_sentinel_llm_provider: str = "none"
     openai_api_key: str | None = None
@@ -59,6 +67,38 @@ class Settings(BaseSettings):
     @property
     def review_token(self) -> str:
         return self.urban_sentinel_review_token
+
+    @property
+    def report_store_path(self) -> str:
+        return self.urban_sentinel_report_store_path
+
+    @property
+    def department_webhooks(self) -> str:
+        return self.urban_sentinel_department_webhooks
+
+    @property
+    def department_webhook_tokens(self) -> str:
+        return self.urban_sentinel_department_webhook_tokens
+
+    @property
+    def department_webhook_token(self) -> str | None:
+        return self.urban_sentinel_department_webhook_token
+
+    @property
+    def department_update_token(self) -> str | None:
+        return self.urban_sentinel_department_update_token
+
+    @property
+    def department_update_tokens(self) -> str:
+        return self.urban_sentinel_department_update_tokens
+
+    @property
+    def public_api_base_url(self) -> str | None:
+        return self.urban_sentinel_public_api_base_url
+
+    @property
+    def public_web_base_url(self) -> str | None:
+        return self.urban_sentinel_public_web_base_url
 
     @property
     def llm_provider(self) -> str:

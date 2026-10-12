@@ -147,7 +147,12 @@ class ImpactAnalysis(BaseModel):
 class DepartmentReportStatus(StrEnum):
     DRAFT = "draft"
     NEEDS_ROUTING_REVIEW = "needs_routing_review"
-    QUEUED = "queued"
+    DELIVERY_PENDING = "delivery_pending"
+    DELIVERY_FAILED = "delivery_failed"
+    DELIVERED = "delivered"
+    ACKNOWLEDGED = "acknowledged"
+    IN_PROGRESS = "in_progress"
+    RESOLVED = "resolved"
 
 
 class DepartmentReport(BaseModel):
@@ -170,6 +175,13 @@ class DepartmentReport(BaseModel):
     uncertainties: list[str] = Field(default_factory=list)
     status: DepartmentReportStatus = DepartmentReportStatus.DRAFT
     delivery_status: str = "not_configured"
+    delivery_attempts: int = 0
+    last_delivery_error: str | None = None
+    external_reference: str | None = None
+    acknowledged_at: datetime | None = None
+    resolved_at: datetime | None = None
+    updated_at: datetime | None = None
+    status_history: list[dict[str, Any]] = Field(default_factory=list)
     created_at: datetime
     submitted_at: datetime | None = None
     submitted_by: str | None = None

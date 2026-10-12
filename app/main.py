@@ -197,7 +197,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             CORSMiddleware,
             allow_origins=current.cors_origins,
             allow_credentials=False,
-            allow_methods=["GET", "POST", "OPTIONS"],
+            allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
             allow_headers=["*"],
             expose_headers=["X-Request-ID"],
         )
@@ -332,6 +332,7 @@ def _mount_intelligence(application: FastAPI, settings: Settings) -> None:
         from urban_sentinel.api.incidents import router as intel_incidents_router
         from urban_sentinel.api.intelligence import router as intel_router
         from urban_sentinel.api.departments import router as departments_router
+        from urban_sentinel.api.department_reports import router as department_reports_router
         from urban_sentinel.intelligence.service import IntelligenceService
 
         service = IntelligenceService()
@@ -343,6 +344,7 @@ def _mount_intelligence(application: FastAPI, settings: Settings) -> None:
     application.include_router(intel_router)
     application.include_router(intel_incidents_router)
     application.include_router(departments_router)
+    application.include_router(department_reports_router)
     logger.info("intelligence layer mounted",
                 extra={"llm_provider": service.llm.provider, "graph": type(service.graph).__name__})
 

@@ -15,9 +15,13 @@ import Sources from './routes/Sources.jsx';
 import Settings from './routes/Settings.jsx';
 import Kitchen from './routes/Kitchen.jsx';
 import Graph from './routes/Graph.jsx';
+import TrackReport from './routes/TrackReport.jsx';
+import { useLocation } from 'react-router-dom';
 
 export default function App() {
   const { signedIn } = useApp();
+  const location = useLocation();
+  if (location.pathname === '/track-report') return <TrackReport />;
   if (!signedIn) return <Login />;
 
   return (

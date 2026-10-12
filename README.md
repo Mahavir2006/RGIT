@@ -764,10 +764,13 @@ uvicorn urban_sentinel.api.main:app --reload --port 8001
 | `GET` | `/api/v1/incidents/{incident_id}/hypotheses` | Ranked hypotheses |
 | `GET` | `/api/v1/incidents/{incident_id}/cascade` | Cascade scenarios |
 | `GET` | `/api/v1/incidents/{incident_id}/recommendations` | Catalogue actions |
-| `GET` | `/api/v1/departments` | Configured routing directory (delivery is not configured) |
-| `GET` | `/api/v1/incidents/{incident_id}/department-reports` | Evidence-linked report drafts and queue state |
+| `GET` | `/api/v1/departments` | Routing directory with per-department webhook configuration state |
+| `GET` | `/api/v1/incidents/{incident_id}/department-reports` | Evidence-linked reports and delivery/resolution state |
 | `PATCH` | `/api/v1/incidents/{incident_id}/department-reports/{report_id}/route` | Reviewer selects a recipient when routing is unresolved |
-| `POST` | `/api/v1/incidents/{incident_id}/department-reports/{report_id}/submit` | Explicitly queue a reviewed report internally (`{"confirm": true}`) |
+| `POST` | `/api/v1/incidents/{incident_id}/department-reports/{report_id}/submit` | Persist and deliver a reviewed report (`{"confirm": true}`); returns a resident tracking token |
+| `POST` | `/api/v1/incidents/{incident_id}/department-reports/{report_id}/retry` | Retry a failed or unconfigured delivery (reviewer bearer token) |
+| `GET` | `/api/v1/report-status` | Privacy-safe resident status lookup (tracking token as bearer token) |
+| `POST` | `/api/v1/department-reports/{report_id}/status` | Department acknowledgment, in-progress, or resolution callback |
 | `POST` | `/api/v1/incidents/{incident_id}/review` | Authorized human review (`Bearer` token) |
 
 Long-running analysis is queued. Pass `"wait": true` in the analyze body only for demos and tests.
@@ -777,11 +780,28 @@ Review decisions are audited. Hypothesis status transitions are constrained (`PR
 Department routing uses the explicit registry in `urban_sentinel/domain/departments.py` and
 conservative rules over cause hypotheses, known assets, and (only when no stronger match exists)
 event types. Reports carry known evidence IDs, cause status, uncertainty, and a requested follow-up.
-Unresolved routes require reviewer assignment. Submission records an internally queued report and
-an audit entry; no department API, email, or durable external outbox is configured, so `queued`
-does not mean delivered. The intelligence operational repository is in-memory and report records
-are lost when that process restarts. The console's Response Center contains a seeded local preview;
-it does not call these APIs or send reports.
+Unresolved routes require reviewer assignment. Submitted reports and their lifecycle state are
+persisted in the SQLite report store (`URBAN_SENTINEL_REPORT_STORE_PATH`). Configure
+`URBAN_SENTINEL_DEPARTMENT_WEBHOOKS` as a JSON object mapping department IDs to HTTPS endpoints.
+Delivery uses the report ID as an `Idempotency-Key`; a 2xx response records `delivered`, while
+network/HTTP failures record `delivery_failed` and can be retried by a reviewer. With no endpoint,
+the report remains stored with delivery `not_configured`; the API never calls that delivered.
+
+Department systems can acknowledge, start, and resolve reports through the status callback endpoint
+using a department-specific `Authorization: Bearer ...` token from
+`URBAN_SENTINEL_DEPARTMENT_UPDATE_TOKENS`. The outbound webhook includes the callback URL when
+`URBAN_SENTINEL_PUBLIC_API_BASE_URL` is set; provision each callback token with its department out
+of band. A reviewer submission returns a high-entropy resident tracking token and, when
+`URBAN_SENTINEL_PUBLIC_WEB_BASE_URL` is set, a link to the public `/track-report` page. The token
+stays in the URL fragment and is sent only as an authorization header to `/api/v1/report-status`;
+the resident view omits evidence and incident details. Set the console's `VITE_API_BASE_URL` when
+the API has a different origin, and allow that origin in the backend CORS configuration. Use a
+persistent mounted path for the SQLite file in deployment, and configure each real department
+endpoint and callback credential.
+
+The console's Response Center still contains a seeded local preview and does not call these APIs.
+Live report review and submission therefore use the protected API until the console is connected to
+the site's authenticated user session.
 
 ## Neo4j contract
 

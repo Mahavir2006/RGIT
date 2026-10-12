@@ -30,7 +30,7 @@ class IntelligenceService:
         llm: LLMClient | None = None,
     ) -> None:
         self.settings = settings or get_settings()
-        self.operational = operational or OperationalRepository()
+        self.operational = operational or OperationalRepository(self.settings.report_store_path)
         if graph is not None:
             self.graph = graph
         elif self.settings.neo4j_uri:
