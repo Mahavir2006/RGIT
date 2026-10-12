@@ -7,7 +7,7 @@ The intelligence layer's own routes (``/api/v1/incidents/{id}/hypotheses``, ``/c
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Header, Query
+from fastapi import Depends, APIRouter, Header, Query
 from pydantic import BaseModel
 from sqlalchemy import func, select
 
@@ -121,7 +121,8 @@ async def workflow_input(incident_id: str, session: DbSession, request_id: Reque
 
 
 @router.post("/{incident_id}/analyze", response_model=Envelope,
-             summary="Run the multi-agent intelligence workflow on a processed incident")
+             summary="Run the multi-agent intelligence workflow on a processed incident",
+             dependencies=[Depends(require_write_key)])
 async def analyze(
     incident_id: str, session: DbSession, request_id: RequestId,
     body: AnalyzeBody | None = None,

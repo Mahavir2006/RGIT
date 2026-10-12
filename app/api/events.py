@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from fastapi import APIRouter, Header, Query, Response, status
+from fastapi import Depends, APIRouter, Header, Query, Response, status
 from pydantic import ValidationError as PydanticValidationError
 
 from app.api.deps import DbSession, RequestId
@@ -39,6 +39,7 @@ router = APIRouter(prefix="/events", tags=["events"])
     response_model=Envelope,
     status_code=status.HTTP_201_CREATED,
     summary="Submit one or more canonical events",
+    dependencies=[Depends(require_write_key)],
 )
 async def submit_events(
     response: Response,
@@ -96,6 +97,11 @@ async def submit_events(
         "rejections": rejected,
         "quarantined_records": quarantined,
     }
+    from app.services.processing_service import auto_process
+
+    processing = await auto_process(list(accepted), trigger="api:events")
+    if processing is not None:
+        payload["processing"] = processing
     return success(payload, request_id)
 
 

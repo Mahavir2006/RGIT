@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, Header, Query
+from fastapi import Depends, APIRouter, Header, Query
 from sqlalchemy import func, select
 
 from app.api.deps import DbSession, RequestId
@@ -92,7 +92,8 @@ def candidate_to_dict(c: CandidateMatchModel) -> dict[str, Any]:
             "run_id": c.run_id, "created_at": _iso(c.created_at)}
 
 
-@router.post("/events/{event_id}", response_model=Envelope, summary="Process one canonical event")
+@router.post("/events/{event_id}", response_model=Envelope, summary="Process one canonical event",
+             dependencies=[Depends(require_write_key)])
 async def process_event(
     event_id: str,
     request_id: RequestId,
@@ -108,7 +109,8 @@ async def process_event(
     return success(result, request_id)
 
 
-@router.post("/batches", response_model=Envelope, summary="Process a bounded batch of events")
+@router.post("/batches", response_model=Envelope, summary="Process a bounded batch of events",
+             dependencies=[Depends(require_write_key)])
 async def process_batch(
     body: ProcessBatchRequest,
     session: DbSession,

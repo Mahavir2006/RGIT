@@ -341,22 +341,13 @@ class IngestionRunner:
 
     async def _process_accepted(self, event_ids: list[str], run_id: str) -> dict:
         """Process newly persisted events. Isolated: never fails the ingestion run."""
-        from app.services.processing_service import get_processing_service
+        from app.services.processing_service import auto_process, get_processing_service
 
-        try:
-            service = get_processing_service()
-            summaries = []
-            for start in range(0, len(event_ids), service.cfg.batch_max):
-                summaries.append(await service.process_events(
-                    event_ids[start:start + service.cfg.batch_max], trigger=f"ingest:{run_id}"))
-            incidents = sorted({i for s in summaries for i in s["incident_ids"]})
-            if incidents and self.settings.intelligence_auto_trigger:
-                await _auto_trigger_intelligence(incidents, service.version)
-            return {"run_ids": [s["run_id"] for s in summaries],
-                    "status": [s["status"] for s in summaries], "incident_ids": incidents}
-        except Exception as exc:  # noqa: BLE001 - processing must not break ingestion
-            logger.exception("post-ingestion processing failed", extra={"run_id": run_id})
-            return {"status": "FAILED", "error": type(exc).__name__}
+        result = await auto_process(event_ids, trigger=f"ingest:{run_id}") or {}
+        if result.get("incident_ids") and self.settings.intelligence_auto_trigger:
+            await _auto_trigger_intelligence(result["incident_ids"],
+                                             get_processing_service().version)
+        return result
 
     # ---------------------------------------------------------- multi-source
     async def run_many(

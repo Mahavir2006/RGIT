@@ -317,3 +317,27 @@ def test_processed_incident_flows_into_intelligence_layer(client):
     assert hyps.status_code == 200 and hyps.json()["hypotheses"]
     wf = client.get(f"{BASE}/intelligence/workflows/{out['workflow_id']}")
     assert wf.status_code == 200
+
+
+@pytest.mark.usefixtures("engine")
+@pytest.mark.parametrize("path", ["/events", "/reports", "/processing/batches",
+                                  "/ingest/replay", "/incidents/x/analyze"])
+def test_auth_is_checked_before_body_validation(client, path):
+    """An unauthenticated caller gets 401, never a 422 describing the expected payload."""
+    r = client.post(f"{BASE}{path}", json={"not": "a valid body"})
+    assert r.status_code == 401
+    assert r.json()["error"]["code"] == "missing_api_key"
+
+
+@pytest.mark.usefixtures("engine")
+def test_submitted_citizen_report_is_processed_automatically(client):
+    body = {"report_category": "waterlogging", "text": "Road under water near the bus depot.",
+            "reported_at": (utc_now() - timedelta(minutes=5)).isoformat(),
+            "location": {"latitude": 19.1136, "longitude": 72.8697, "accuracy_m": 30}}
+    r = client.post(f"{BASE}/reports", json=body, headers=W)
+    assert r.status_code == 201
+    data = r.json()["data"]
+    assert data["processing"]["incident_ids"]  # a report seeds or joins a cluster
+    detail = client.get(f"{BASE}/processing/events/{data['event_id']}").json()["data"]
+    assert detail["processing"][0]["status"] == "PROCESSED"
+    assert detail["candidates"]

@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from fastapi import APIRouter, Header, Query
+from fastapi import Depends, APIRouter, Header, Query
 
 from app.api.deps import DbSession, RequestId
 from app.api.envelope import paginated, success
@@ -79,6 +79,7 @@ async def source_health(session: DbSession, request_id: RequestId) -> Envelope:
     "/{source_id}/ingest",
     response_model=Envelope,
     summary="Trigger an ingestion run for one source",
+    dependencies=[Depends(require_write_key)],
 )
 async def trigger_ingestion(
     source_id: str,
@@ -142,6 +143,7 @@ ingest_router = APIRouter(prefix="/ingest", tags=["ingestion"])
     "/{source_id}",
     response_model=Envelope,
     summary="Trigger an ingestion run for one source",
+    dependencies=[Depends(require_write_key)],
 )
 async def trigger_ingest(
     source_id: str,

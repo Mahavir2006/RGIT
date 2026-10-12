@@ -11,7 +11,7 @@ Privacy rules enforced here
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Header, Response, status
+from fastapi import Depends, APIRouter, Header, Response, status
 from pydantic import ValidationError as PydanticValidationError
 
 from app.api.deps import DbSession, RequestId
@@ -34,6 +34,7 @@ router = APIRouter(prefix="/reports", tags=["reports"])
     response_model=Envelope,
     status_code=status.HTTP_201_CREATED,
     summary="Submit a citizen report (unverified observation)",
+    dependencies=[Depends(require_write_key)],
 )
 async def submit_report(
     response: Response,
@@ -81,7 +82,13 @@ async def submit_report(
             submitted_at=event.ingest_time,
             redacted=redacted,
         )
-        return success(accepted.model_dump(mode="json"), request_id)
+        from app.services.processing_service import auto_process
+
+        data = accepted.model_dump(mode="json")
+        processing = await auto_process([event.event_id], trigger="api:reports")
+        if processing is not None:
+            data["processing"] = processing
+        return success(data, request_id)
 
     # A duplicate report is reported as such rather than silently accepted twice: two submissions
     # are not two independent observations.

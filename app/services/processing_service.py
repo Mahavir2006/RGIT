@@ -435,3 +435,26 @@ def get_processing_service() -> ProcessingService:
     settings = get_settings()
     return ProcessingService(get_session_factory(), get_processing_config(),
                              sqlite=settings.async_database_url.startswith("sqlite"))
+
+
+async def auto_process(event_ids: list[str], *, trigger: str) -> dict[str, Any] | None:
+    """Process newly persisted events if ``PROCESSING_AUTO_ON_INGEST`` is on.
+
+    Used by ingestion runs and by direct submissions (``POST /events``, ``POST /reports``).
+    Isolated: a processing failure is reported in the result, never raised to the writer.
+    """
+    from app.core.config import get_settings
+
+    if not event_ids or not get_settings().processing_auto_on_ingest:
+        return None
+    try:
+        service = get_processing_service()
+        summaries = [await service.process_events(event_ids[i:i + service.cfg.batch_max],
+                                                  trigger=trigger)
+                     for i in range(0, len(event_ids), service.cfg.batch_max)]
+        return {"run_ids": [x["run_id"] for x in summaries],
+                "status": [x["status"] for x in summaries],
+                "incident_ids": sorted({i for x in summaries for i in x["incident_ids"]})}
+    except Exception as exc:  # noqa: BLE001 - processing must not break the write path
+        logger.exception("automatic processing failed", extra={"trigger": trigger})
+        return {"status": "FAILED", "error": type(exc).__name__}
