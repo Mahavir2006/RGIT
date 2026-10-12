@@ -40,6 +40,10 @@ def deterministic_causal(
     water = by_type.get(EventType.WATER_LEVEL.value, [])
     traffic = by_type.get(EventType.TRAFFIC.value, [])
     reports = by_type.get(EventType.CITIZEN_REPORT.value, [])
+    crowd = by_type.get(EventType.CROWD.value, [])
+    for eid, ev in events.items():
+        if (ev.unit == "count" or "crowd" in ev.source_id.lower()) and eid not in crowd:
+            crowd.append(eid)
     offline = [h.source_id for h in payload.source_health if h.status == SourceHealthStatus.OFFLINE]
 
     hypotheses: list[Hypothesis] = []
@@ -102,7 +106,33 @@ def deterministic_causal(
             )
         )
 
-    insufficient = not hypotheses or (not water and not reports and not rain)
+    if crowd:
+        hypotheses.append(
+            Hypothesis(
+                hypothesis_id=_hid(incident_id, "public-gathering-protest"),
+                incident_id=incident_id,
+                claim="Public gathering or protest activity evidenced by quantitative vision crowd density.",
+                status=HypothesisStatus.PROPOSED,
+                score=min(1.0, 0.40 + 0.15 * len(crowd)),
+                score_type=ScoreType.HEURISTIC_SUPPORT,
+                supporting_event_ids=list(crowd),
+                contradicting_event_ids=[],
+                assumptions=[
+                    "Vision-detected head counts indicate localized physical human assembly.",
+                    "Sudden count spikes (>2x rolling average) correlate with assembly formation rather than baseline pedestrian flow.",
+                ],
+                limitations=[
+                    "Camera field-of-view provides sector-level density, not full crowd census.",
+                    "Assembly intent (demonstration vs festive vs transport bottleneck) requires multi-source corroboration.",
+                ],
+                model_version="deterministic-v1",
+                alternatives=[
+                    "Transit bottleneck or festival congestion without civil demonstration.",
+                ],
+            )
+        )
+
+    insufficient = not hypotheses or (not water and not reports and not rain and not crowd)
     if insufficient:
         hypotheses = [
             Hypothesis(

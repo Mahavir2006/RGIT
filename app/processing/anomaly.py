@@ -186,7 +186,52 @@ def detect_anomalies(
                         f"{rule.window_hours} h window) |z| >= {band.value:g}",
         ))
 
+    findings.extend(_crowd_spike(event, ctx, subject))
     findings.extend(_sensor_health(event, ctx, cfg, subject))
+    return findings
+
+
+def _crowd_spike(event: CanonicalEvent, ctx: AnomalyContext, subject: str) -> list[AnomalyFinding]:
+    """Detect crowd count spikes where current reading is > 2x rolling average."""
+    findings: list[AnomalyFinding] = []
+    for m in event.measurements:
+        if m.name in ("head_count", "crowd_count"):
+            prev = [r for r in ctx.history.get(m.name, []) if r.unit == m.unit]
+            if len(prev) >= 3:
+                recent = prev[-10:]
+                rolling_avg = sum(r.value for r in recent) / len(recent)
+                if rolling_avg >= 5.0 and m.value >= 2.0 * rolling_avg:
+                    severity = "CRITICAL" if m.value >= 3.0 * rolling_avg else "HIGH"
+                    findings.append(
+                        AnomalyFinding(
+                            anomaly_type=AnomalyType.CROWD_SPIKE,
+                            kind=AnomalyKind.ENVIRONMENTAL,
+                            severity=severity,
+                            rule_id="crowd.count_spike",
+                            rule_version="1",
+                            source_id=event.source_id,
+                            event_id=event.event_id,
+                            subject=subject,
+                            measurement=m.name,
+                            observed_value=m.value,
+                            unit=m.unit,
+                            threshold=round(2.0 * rolling_avg, 2),
+                            score=round(m.value / rolling_avg, 2),
+                            method="rolling_average_multiplier",
+                            sample_count=len(recent),
+                            expected_range={"rolling_average": round(rolling_avg, 2), "multiplier_threshold": 2.0},
+                            explanation=(
+                                f"{m.name} spiked to {m.value:g} {m.unit} "
+                                f"({m.value / rolling_avg:.1f}x rolling average of {rolling_avg:.1f} {m.unit}, n={len(recent)}); "
+                                "sudden surge in crowd density indicates potential gathering, congestion, or protest."
+                            ),
+                            details={
+                                "rolling_average": round(rolling_avg, 2),
+                                "multiplier": round(m.value / rolling_avg, 2),
+                                "recent_samples": [r.value for r in recent],
+                            },
+                        )
+                    )
     return findings
 
 

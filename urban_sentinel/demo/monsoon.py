@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-import asyncio
-from datetime import UTC, datetime, timedelta
-from pprint import pprint
+try:
+    from datetime import UTC, datetime, timedelta
+except ImportError:
+    from datetime import datetime, timedelta, timezone
+    UTC = timezone.utc
 
 from urban_sentinel.core.config import Settings
 from urban_sentinel.domain.models import (

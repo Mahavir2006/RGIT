@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import UTC, datetime
-from time import perf_counter
+try:
+    from datetime import UTC, datetime
+except ImportError:
+    from datetime import datetime, timezone
+    UTC = timezone.utc
 from typing import Any
 from uuid import uuid4
 

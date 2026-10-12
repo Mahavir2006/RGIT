@@ -28,6 +28,7 @@ class AnomalyType(str, Enum):
     SENSOR_CONFLICT = "SENSOR_CONFLICT"
     REPEATED_MALFORMED = "REPEATED_MALFORMED"
     TIMESTAMP_ANOMALY = "TIMESTAMP_ANOMALY"
+    CROWD_SPIKE = "CROWD_SPIKE"
 
 
 class AnomalySeverity(str, Enum):
