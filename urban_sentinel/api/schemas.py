@@ -22,3 +22,11 @@ class ReviewRequest(BaseModel):
     target_id: str | None = None
     notes: str | None = None
     actor: str = "operator"
+
+
+class DepartmentReportRouteRequest(BaseModel):
+    department_id: str
+
+
+class DepartmentReportSubmitRequest(BaseModel):
+    confirm: bool

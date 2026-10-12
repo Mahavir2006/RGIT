@@ -6,7 +6,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
-from urban_sentinel.domain.models import AssociationDecision, HypothesisStatus, ScoreType
+from urban_sentinel.domain.models import AssociationDecision, GeoPoint, HypothesisStatus, ScoreType
 
 
 class WorkflowStatus(StrEnum):
@@ -144,6 +144,37 @@ class ImpactAnalysis(BaseModel):
     used_fallback: bool = False
 
 
+class DepartmentReportStatus(StrEnum):
+    DRAFT = "draft"
+    NEEDS_ROUTING_REVIEW = "needs_routing_review"
+    QUEUED = "queued"
+
+
+class DepartmentReport(BaseModel):
+    report_id: str
+    incident_id: str
+    department_id: str | None = None
+    department_name: str
+    routing_reason: str
+    routing_confidence: float = Field(ge=0.0, le=1.0)
+    location: GeoPoint | None = None
+    subject: str
+    summary: str
+    cause_hypothesis_id: str | None = None
+    cause_claim: str | None = None
+    cause_status: str | None = None
+    cause_score: float | None = Field(default=None, ge=0.0, le=1.0)
+    evidence_event_ids: list[str] = Field(default_factory=list)
+    asset_ids: list[str] = Field(default_factory=list)
+    requested_follow_up: str
+    uncertainties: list[str] = Field(default_factory=list)
+    status: DepartmentReportStatus = DepartmentReportStatus.DRAFT
+    delivery_status: str = "not_configured"
+    created_at: datetime
+    submitted_at: datetime | None = None
+    submitted_by: str | None = None
+
+
 class AgentRun(BaseModel):
     run_id: str
     agent_name: str
@@ -180,6 +211,7 @@ class ConsolidatedResult(BaseModel):
     cascade_scenarios: list[CascadeScenario] = Field(default_factory=list)
     severity_assessment: SeverityAssessment | None = None
     candidate_actions: list[ResponseRecommendation] = Field(default_factory=list)
+    department_reports: list[DepartmentReport] = Field(default_factory=list)
     evidence_gaps: list[str] = Field(default_factory=list)
     agent_runs: list[AgentRun] = Field(default_factory=list)
     errors: list[str] = Field(default_factory=list)

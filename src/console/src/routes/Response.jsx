@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, ShieldCheck, X } from 'lucide-react';
+import { Plus, ShieldCheck, X, Send, Building2 } from 'lucide-react';
 import { PageHeader, PageBody } from '@/lib/Shell.jsx';
 import {
   Panel, Badge, Button, Metric, DataTable, EmptyState, PermissionDenied,
@@ -10,6 +10,7 @@ import {
 import { KeyValue, Sheet, SheetContent, SheetHeader, SheetBody, SheetTitle, SheetDescription, SheetFooter, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/overlays';
 import { useApp } from '@/lib/store.jsx';
 import { ACTIONS } from '@/data/scenario.js';
+import { DEPARTMENTS, DEPARTMENT_REPORTS } from '@/data/departments.js';
 import { ACTION_STATUSES, ACTION_TRANSITIONS } from '@/data/graph.js';
 import { clock } from '@/lib/format.js';
 
@@ -21,6 +22,7 @@ export default function Response() {
   const [filters, setFilters] = useState({ priority: 'ALL', status: 'ALL' });
   const [selected, setSelected] = useState(null);
   const [reason, setReason] = useState('');
+  const [reports, setReports] = useState(DEPARTMENT_REPORTS);
 
   const rows = useMemo(() => ACTIONS
     .map(action => ({ ...action, effectiveStatus: actionStatus[action.action_id] ?? action.status }))
@@ -44,6 +46,20 @@ export default function Response() {
     setReason('');
   }
 
+  function routeReport(reportId, departmentId) {
+    const department = DEPARTMENTS.find(item => item.department_id === departmentId);
+    if (!department) return;
+    setReports(items => items.map(item => item.report_id === reportId
+      ? { ...item, department_id: department.department_id, department_name: department.name, status: 'draft' }
+      : item));
+  }
+
+  function queueReport(reportId) {
+    setReports(items => items.map(item => item.report_id === reportId
+      ? { ...item, status: 'queued', delivery_status: 'not_configured', submitted_by: role.label }
+      : item));
+  }
+
   return (
     <div className="min-h-full">
       <PageHeader
@@ -54,6 +70,61 @@ export default function Response() {
 
       <PageBody className="space-y-4">
         <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-4">
+          <Panel
+            title="Department reports"
+            description="Evidence-linked drafts routed to the department responsible for the suspected system."
+            actions={<Badge tone="degraded"><Building2 />delivery not configured</Badge>}
+          >
+            <div className="space-y-4">
+              {reports.map(report => (
+                <article key={report.report_id} className="rounded-app border border-border bg-surface-2 p-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge tone={report.status === 'queued' ? 'healthy' : 'degraded'}>
+                      {report.status === 'queued' ? 'queued locally' : report.status.replace(/_/g, ' ')}
+                    </Badge>
+                    <span className="font-mono text-[11.5px] text-fg-subtle">{report.report_id}</span>
+                    <div className="ml-auto w-full sm:w-[250px]">
+                      <Select value={report.department_id ?? ''} onValueChange={value => routeReport(report.report_id, value)}>
+                        <SelectTrigger aria-label="Report recipient" disabled={report.status === 'queued'}>
+                          <SelectValue placeholder="Choose department" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {DEPARTMENTS.map(department => (
+                            <SelectItem key={department.department_id} value={department.department_id}>{department.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <h3 className="mt-3 text-[14px] font-medium text-fg">{report.subject}</h3>
+                  <p className="mt-1 text-[12.5px] leading-relaxed text-fg-muted">{report.summary}</p>
+                  <p className="mt-2 text-[12px] text-fg-subtle">Routing: {report.routing_reason}</p>
+                  <div className="mt-3 grid gap-3 text-[12px] sm:grid-cols-2">
+                    <div><span className="text-fg-subtle">Cause status: </span><span className="text-fg">{report.cause_status ?? 'Unresolved'}</span></div>
+                    <div><span className="text-fg-subtle">Evidence: </span><span className="font-mono text-fg">{report.evidence_event_ids.join(', ') || 'none'}</span></div>
+                  </div>
+                  <p className="mt-2 text-[12px] text-fg-muted">Requested follow-up: {report.requested_follow_up}</p>
+                  {report.uncertainties.length > 0 && (
+                    <ul className="mt-2 list-inside list-disc text-[11.5px] text-degraded">
+                      {report.uncertainties.map(item => <li key={item}>{item}</li>)}
+                    </ul>
+                  )}
+                  <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-3">
+                    <Button size="sm" variant="primary" disabled={!can('approve') || report.status === 'queued'}
+                      onClick={() => queueReport(report.report_id)}>
+                      <Send />{report.status === 'queued' ? 'Queued locally' : 'Submit report'}
+                    </Button>
+                    <span className="text-[11.5px] text-fg-subtle">
+                      {report.status === 'queued'
+                        ? 'Recorded in this preview only; no department received it.'
+                        : 'Preview only. Live API submissions are stored internally; external delivery is not configured.'}
+                    </span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </Panel>
+
           <div className="grid grid-cols-2 gap-px overflow-hidden rounded-app border border-border bg-border lg:grid-cols-4">
             {[
               { label: 'Proposed', value: rows.filter(item => item.effectiveStatus === 'PROPOSED').length },

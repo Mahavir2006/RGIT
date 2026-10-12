@@ -28,6 +28,7 @@ class IntelligenceState(TypedDict, total=False):
     cascade_scenarios: list[dict[str, Any]]
     severity_assessment: dict[str, Any] | None
     candidate_actions: list[dict[str, Any]]
+    department_reports: list[dict[str, Any]]
     evidence_gaps: list[str]
     agent_runs: list[dict[str, Any]]
     review_required: bool
@@ -70,6 +71,7 @@ def empty_state(workflow_id: str) -> IntelligenceState:
         cascade_scenarios=[],
         severity_assessment=None,
         candidate_actions=[],
+        department_reports=[],
         evidence_gaps=[],
         agent_runs=[],
         review_required=False,

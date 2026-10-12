@@ -9,7 +9,8 @@ flowchart TB
     subgraph IFACE["Interface layer — urban_sentinel/api"]
         MAIN["main.py<br/>create_app / run"]
         R_INT["intelligence.py<br/>POST /analyze/{id}<br/>GET /workflows/{id}"]
-        R_INC["incidents.py<br/>/hypotheses /cascade<br/>/recommendations /review"]
+        R_INC["incidents.py<br/>/hypotheses /cascade<br/>/recommendations /department-reports /review"]
+        R_DEPT["departments.py<br/>GET /departments"]
         DEPS["deps.py<br/>get_service<br/>require_reviewer"]
     end
 
@@ -26,6 +27,7 @@ flowchart TB
         A2["incident_fusion<br/>fusion.py"]
         A3["causal_cascade<br/>causal.py"]
         A4["impact_response<br/>impact.py"]
+        A5["department_reporting<br/>department_reporting.py"]
     end
 
     subgraph CROSS["Cross-cutting"]
@@ -52,6 +54,7 @@ flowchart TB
 
     MAIN --> R_INT
     MAIN --> R_INC
+    MAIN --> R_DEPT
     R_INT --> DEPS
     R_INC --> DEPS
     DEPS --> SVC
@@ -66,6 +69,7 @@ flowchart TB
     WF --> A2
     WF --> A3
     WF --> A4
+    WF --> A5
 
     WF --> VAL
     WF --> CACHE
@@ -108,7 +112,8 @@ flowchart TB
     PA -->|"scope includes CAUSAL"| CC["causal_cascade"]
     PA -->|"scope excludes CAUSAL"| IR["impact_response"]
     CC --> IR
-    IR --> VO["validate_outputs"]
+    IR --> DR["department_reporting"]
+    DR --> VO["validate_outputs"]
     VO --> PR
     PR --> CO["consolidate"]
     CO --> ENDV((END))
@@ -128,6 +133,8 @@ Routing rules:
 | `signal_intelligence` | `skip_fusion` | `persist_association` |
 | `persist_association` | `reanalysis_scope` contains `CAUSAL` | `causal_cascade` |
 | `persist_association` | otherwise | `impact_response` |
+| `impact_response` | always | `department_reporting` |
+| `department_reporting` | always | `validate_outputs` |
 
 ## 3. Agent call envelope
 

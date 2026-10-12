@@ -331,6 +331,7 @@ def _mount_intelligence(application: FastAPI, settings: Settings) -> None:
     try:
         from urban_sentinel.api.incidents import router as intel_incidents_router
         from urban_sentinel.api.intelligence import router as intel_router
+        from urban_sentinel.api.departments import router as departments_router
         from urban_sentinel.intelligence.service import IntelligenceService
 
         service = IntelligenceService()
@@ -341,6 +342,7 @@ def _mount_intelligence(application: FastAPI, settings: Settings) -> None:
     set_intelligence_service(service)
     application.include_router(intel_router)
     application.include_router(intel_incidents_router)
+    application.include_router(departments_router)
     logger.info("intelligence layer mounted",
                 extra={"llm_provider": service.llm.provider, "graph": type(service.graph).__name__})
 

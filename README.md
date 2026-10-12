@@ -727,6 +727,7 @@ START
   → persist proposed association (operational DB is authoritative)
   → Causal + Cascade analyst (hypotheses + bounded graph traversal)
   → Impact + Response analyst (catalogue ranking, no dispatch)
+  → Department Reporting (rule-routed, evidence-linked report drafts)
   → validate IDs / persist provenance / consolidate
 END
 ```
@@ -763,11 +764,24 @@ uvicorn urban_sentinel.api.main:app --reload --port 8001
 | `GET` | `/api/v1/incidents/{incident_id}/hypotheses` | Ranked hypotheses |
 | `GET` | `/api/v1/incidents/{incident_id}/cascade` | Cascade scenarios |
 | `GET` | `/api/v1/incidents/{incident_id}/recommendations` | Catalogue actions |
+| `GET` | `/api/v1/departments` | Configured routing directory (delivery is not configured) |
+| `GET` | `/api/v1/incidents/{incident_id}/department-reports` | Evidence-linked report drafts and queue state |
+| `PATCH` | `/api/v1/incidents/{incident_id}/department-reports/{report_id}/route` | Reviewer selects a recipient when routing is unresolved |
+| `POST` | `/api/v1/incidents/{incident_id}/department-reports/{report_id}/submit` | Explicitly queue a reviewed report internally (`{"confirm": true}`) |
 | `POST` | `/api/v1/incidents/{incident_id}/review` | Authorized human review (`Bearer` token) |
 
 Long-running analysis is queued. Pass `"wait": true` in the analyze body only for demos and tests.
 
 Review decisions are audited. Hypothesis status transitions are constrained (`PROPOSED` → `UNDER_REVIEW` / `SUPPORTED` / `REJECTED` / `UNRESOLVED`, and the documented subset thereafter). Chain-of-thought is not stored.
+
+Department routing uses the explicit registry in `urban_sentinel/domain/departments.py` and
+conservative rules over cause hypotheses, known assets, and (only when no stronger match exists)
+event types. Reports carry known evidence IDs, cause status, uncertainty, and a requested follow-up.
+Unresolved routes require reviewer assignment. Submission records an internally queued report and
+an audit entry; no department API, email, or durable external outbox is configured, so `queued`
+does not mean delivered. The intelligence operational repository is in-memory and report records
+are lost when that process restarts. The console's Response Center contains a seeded local preview;
+it does not call these APIs or send reports.
 
 ## Neo4j contract
 

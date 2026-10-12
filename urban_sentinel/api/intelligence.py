@@ -81,6 +81,7 @@ def _workflow_view(workflow_id: str, state: dict) -> dict:
         "cascade_scenarios": state.get("cascade_scenarios") or [],
         "severity_assessment": state.get("severity_assessment"),
         "candidate_actions": state.get("candidate_actions") or [],
+        "department_reports": state.get("department_reports") or [],
         "operator_summary": state.get("operator_summary"),
         "schema_version": state.get("schema_version"),
     }

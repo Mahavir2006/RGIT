@@ -3,7 +3,9 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 
 from urban_sentinel.api.deps import get_service, require_reviewer
-from urban_sentinel.api.schemas import ReviewRequest
+from urban_sentinel.api.schemas import DepartmentReportRouteRequest, DepartmentReportSubmitRequest, ReviewRequest
+from urban_sentinel.domain.departments import departments_by_id
+from urban_sentinel.domain.models import ReviewDecision
 from urban_sentinel.intelligence.service import IntelligenceService
 
 router = APIRouter(prefix="/api/v1/incidents", tags=["incidents"])
@@ -36,6 +38,53 @@ async def get_recommendations(
     }
 
 
+@router.get("/{incident_id}/department-reports")
+async def get_department_reports(
+    incident_id: str, service: IntelligenceService = Depends(get_service)
+) -> dict:
+    items = service.operational.get_department_reports(incident_id)
+    return {"incident_id": incident_id, "reports": [item.model_dump(mode="json") for item in items]}
+
+
+@router.patch("/{incident_id}/department-reports/{report_id}/route")
+async def route_department_report(
+    incident_id: str,
+    report_id: str,
+    body: DepartmentReportRouteRequest,
+    service: IntelligenceService = Depends(get_service),
+    actor: str = Depends(require_reviewer),
+) -> dict:
+    department = departments_by_id().get(body.department_id)
+    if department is None:
+        raise HTTPException(status_code=422, detail="Unknown department")
+    report = service.operational.route_department_report(
+        incident_id, report_id, department_id=department.department_id,
+        department_name=department.name, actor=actor,
+    )
+    if report is None:
+        raise HTTPException(status_code=404, detail="Unknown or already queued department report")
+    return {"report": report.model_dump(mode="json")}
+
+
+@router.post("/{incident_id}/department-reports/{report_id}/submit")
+async def submit_department_report(
+    incident_id: str,
+    report_id: str,
+    body: DepartmentReportSubmitRequest,
+    service: IntelligenceService = Depends(get_service),
+    actor: str = Depends(require_reviewer),
+) -> dict:
+    if not body.confirm:
+        raise HTTPException(status_code=422, detail="Explicit confirmation is required")
+    report = service.operational.submit_department_report(incident_id, report_id, actor=actor)
+    if report is None:
+        raise HTTPException(status_code=409, detail="Report needs a valid department recipient before submission")
+    return {
+        "report": report.model_dump(mode="json"),
+        "message": "Queued in the internal report store. External department delivery is not configured.",
+    }
+
+
 @router.post("/{incident_id}/review")
 async def review_incident(
     incident_id: str,
@@ -43,6 +92,11 @@ async def review_incident(
     service: IntelligenceService = Depends(get_service),
     actor: str = Depends(require_reviewer),
 ) -> dict:
+    if body.decision in {
+        ReviewDecision.SUBMIT_DEPARTMENT_REPORT,
+        ReviewDecision.ROUTE_DEPARTMENT_REPORT,
+    }:
+        raise HTTPException(status_code=422, detail="Use the department report endpoints for report actions")
     if service.operational.get_incident(incident_id) is None and not service.operational.get_hypotheses(
         incident_id
     ):

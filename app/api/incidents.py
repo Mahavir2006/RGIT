@@ -1,7 +1,7 @@
 """Incident candidates, provisional clusters, and the hand-off to the intelligence layer.
 
 The intelligence layer's own routes (``/api/v1/incidents/{id}/hypotheses``, ``/cascade``,
-``/recommendations``, ``/review`` and ``/api/v1/intelligence/*``) are mounted alongside these by
+``/recommendations``, ``/department-reports``, ``/review`` and ``/api/v1/intelligence/*``) are mounted alongside these by
 ``app.main``; the paths do not overlap.
 """
 
@@ -137,5 +137,6 @@ async def analyze(
         "hypotheses": f"/api/v1/incidents/{incident_id}/hypotheses",
         "cascade": f"/api/v1/incidents/{incident_id}/cascade",
         "recommendations": f"/api/v1/incidents/{incident_id}/recommendations",
+        "department_reports": f"/api/v1/incidents/{incident_id}/department-reports",
     }
     return success(result, request_id)

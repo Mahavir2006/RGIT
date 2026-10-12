@@ -3,6 +3,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 
 from urban_sentinel import SCHEMA_VERSION, __version__
+from urban_sentinel.api.departments import router as departments_router
 from urban_sentinel.api.incidents import router as incidents_router
 from urban_sentinel.api.intelligence import router as intelligence_router
 from urban_sentinel.core.config import get_settings
@@ -21,6 +22,7 @@ def create_app(service: IntelligenceService | None = None) -> FastAPI:
     app.state.intelligence = service or IntelligenceService(settings=settings)
     app.include_router(intelligence_router)
     app.include_router(incidents_router)
+    app.include_router(departments_router)
 
     @app.get("/health")
     async def health() -> dict:

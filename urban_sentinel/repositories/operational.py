@@ -14,6 +14,8 @@ from urban_sentinel.domain.models import (
 from urban_sentinel.intelligence.exceptions import ConcurrentUpdateError
 from urban_sentinel.intelligence.models import (
     CascadeScenario,
+    DepartmentReport,
+    DepartmentReportStatus,
     Hypothesis,
     ResponseRecommendation,
     WorkflowStatus,
@@ -31,6 +33,7 @@ class OperationalRepository:
         self.hypotheses: dict[str, list[Hypothesis]] = {}
         self.scenarios: dict[str, list[CascadeScenario]] = {}
         self.recommendations: dict[str, list[ResponseRecommendation]] = {}
+        self.department_reports: dict[str, list[DepartmentReport]] = {}
         self.audits: dict[str, list[AuditRecord]] = {}
 
     def get_incident(self, incident_id: str) -> IncidentSummary | None:
@@ -118,6 +121,87 @@ class OperationalRepository:
 
     def get_recommendations(self, incident_id: str) -> list[ResponseRecommendation]:
         return list(self.recommendations.get(incident_id, []))
+
+    def replace_department_reports(self, incident_id: str, items: list[DepartmentReport]) -> None:
+        with self._lock:
+            existing = {item.report_id: item for item in self.department_reports.get(incident_id, [])}
+            for item in items:
+                current = existing.get(item.report_id)
+                # A workflow rerun must never reset an operator-submitted report to draft.
+                if current and current.status == DepartmentReportStatus.QUEUED:
+                    continue
+                if current and current.routing_reason.startswith("Recipient selected by operator"):
+                    item = item.model_copy(update={
+                        "department_id": current.department_id,
+                        "department_name": current.department_name,
+                        "routing_reason": current.routing_reason,
+                        "routing_confidence": current.routing_confidence,
+                    })
+                existing[item.report_id] = item
+            self.department_reports[incident_id] = list(existing.values())
+
+    def get_department_reports(self, incident_id: str) -> list[DepartmentReport]:
+        with self._lock:
+            return list(self.department_reports.get(incident_id, []))
+
+    def submit_department_report(
+        self, incident_id: str, report_id: str, *, actor: str
+    ) -> DepartmentReport | None:
+        with self._lock:
+            items = self.department_reports.get(incident_id, [])
+            for index, item in enumerate(items):
+                if item.report_id != report_id:
+                    continue
+                if item.department_id is None or item.status == DepartmentReportStatus.NEEDS_ROUTING_REVIEW:
+                    return None
+                if item.status == DepartmentReportStatus.QUEUED:
+                    return item
+                updated = item.model_copy(update={
+                    "status": DepartmentReportStatus.QUEUED,
+                    "delivery_status": "not_configured",
+                    "submitted_at": datetime.now(UTC),
+                    "submitted_by": actor,
+                })
+                items[index] = updated
+                self.audits.setdefault(incident_id, []).append(
+                    AuditRecord(
+                        audit_id=str(uuid4()),
+                        incident_id=incident_id,
+                        actor=actor,
+                        decision=ReviewDecision.SUBMIT_DEPARTMENT_REPORT,
+                        target_id=report_id,
+                        notes="Department report queued internally; external delivery is not configured.",
+                        created_at=datetime.now(UTC),
+                    )
+                )
+                return updated
+            return None
+
+    def route_department_report(
+        self, incident_id: str, report_id: str, *, department_id: str, department_name: str, actor: str
+    ) -> DepartmentReport | None:
+        with self._lock:
+            items = self.department_reports.get(incident_id, [])
+            for index, item in enumerate(items):
+                if item.report_id != report_id or item.status == DepartmentReportStatus.QUEUED:
+                    continue
+                updated = item.model_copy(update={
+                    "department_id": department_id,
+                    "department_name": department_name,
+                    "routing_reason": f"Recipient selected by operator {actor}.",
+                    "routing_confidence": 1.0,
+                    "status": DepartmentReportStatus.DRAFT,
+                })
+                items[index] = updated
+                self.audits.setdefault(incident_id, []).append(
+                    AuditRecord(
+                        audit_id=str(uuid4()), incident_id=incident_id, actor=actor,
+                        decision=ReviewDecision.ROUTE_DEPARTMENT_REPORT, target_id=report_id,
+                        notes=f"Recipient set to {department_id}.", created_at=datetime.now(UTC),
+                    )
+                )
+                return updated
+            return None
 
     def record_review(
         self,

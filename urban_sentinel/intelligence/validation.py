@@ -5,6 +5,7 @@ from collections.abc import Iterable
 from urban_sentinel.intelligence.exceptions import InvalidAgentOutput
 from urban_sentinel.intelligence.models import (
     CascadeScenario,
+    DepartmentReport,
     FusionDecision,
     Hypothesis,
     ResponseRecommendation,
@@ -80,3 +81,25 @@ def validate_recommendation(
     bad = _unknown(rec.evidence_event_ids, known_event_ids)
     if bad:
         raise InvalidAgentOutput(f"recommendation referenced unknown event IDs: {bad}")
+
+
+def validate_department_report(
+    report: DepartmentReport,
+    known_event_ids: set[str],
+    known_asset_ids: set[str],
+    known_hypothesis_ids: set[str],
+    known_departments: dict,
+    incident_id: str | None,
+) -> None:
+    if incident_id and report.incident_id != incident_id:
+        raise InvalidAgentOutput("department report belongs to a different incident")
+    if report.department_id and report.department_id not in known_departments:
+        raise InvalidAgentOutput(f"department report used unknown department: {report.department_id}")
+    bad_events = _unknown(report.evidence_event_ids, known_event_ids)
+    if bad_events:
+        raise InvalidAgentOutput(f"department report referenced unknown event IDs: {bad_events}")
+    bad_assets = _unknown(report.asset_ids, known_asset_ids)
+    if bad_assets:
+        raise InvalidAgentOutput(f"department report referenced unknown asset IDs: {bad_assets}")
+    if report.cause_hypothesis_id and report.cause_hypothesis_id not in known_hypothesis_ids:
+        raise InvalidAgentOutput(f"department report referenced unknown hypothesis: {report.cause_hypothesis_id}")

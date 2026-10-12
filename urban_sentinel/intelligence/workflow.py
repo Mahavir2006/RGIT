@@ -13,12 +13,14 @@ from pydantic import BaseModel, ValidationError
 from urban_sentinel import SCHEMA_VERSION
 from urban_sentinel.core.logging import log_event
 from urban_sentinel.domain.actions import catalogue_by_id
+from urban_sentinel.domain.departments import departments_by_id
 from urban_sentinel.domain.models import (
     AssociationDecision,
     IncidentSummary,
     ProcessedWorkflowInput,
 )
 from urban_sentinel.intelligence.agents.causal import deterministic_causal
+from urban_sentinel.intelligence.agents.department_reporting import build_department_reports
 from urban_sentinel.intelligence.agents.fusion import deterministic_fusion
 from urban_sentinel.intelligence.agents.impact import deterministic_impact
 from urban_sentinel.intelligence.agents.signal import deterministic_signal
@@ -32,6 +34,7 @@ from urban_sentinel.intelligence.models import (
     AgentRun,
     CascadeScenario,
     CausalAnalysis,
+    DepartmentReport,
     FusionDecision,
     Hypothesis,
     ImpactAnalysis,
@@ -44,6 +47,7 @@ from urban_sentinel.intelligence.state import IntelligenceState
 from urban_sentinel.intelligence.triggers import association_is_ambiguous, needs_signal_agent
 from urban_sentinel.intelligence.validation import (
     validate_fusion,
+    validate_department_report,
     validate_hypothesis,
     validate_recommendation,
     validate_scenario,
@@ -111,6 +115,7 @@ class IntelligenceWorkflow:
         builder.add_node("persist_association", self.persist_association)
         builder.add_node("causal_cascade", self.causal_cascade)
         builder.add_node("impact_response", self.impact_response)
+        builder.add_node("department_reporting", self.department_reporting)
         builder.add_node("validate_outputs", self.validate_outputs)
         builder.add_node("persist_results", self.persist_results)
         builder.add_node("consolidate", self.consolidate)
@@ -142,7 +147,8 @@ class IntelligenceWorkflow:
             {"causal_cascade": "causal_cascade", "impact_response": "impact_response"},
         )
         builder.add_edge("causal_cascade", "impact_response")
-        builder.add_edge("impact_response", "validate_outputs")
+        builder.add_edge("impact_response", "department_reporting")
+        builder.add_edge("department_reporting", "validate_outputs")
         builder.add_edge("validate_outputs", "persist_results")
         builder.add_edge("persist_results", "consolidate")
         builder.add_edge("consolidate", END)
@@ -661,7 +667,38 @@ class IntelligenceWorkflow:
                 )
             except InvalidAgentOutput as exc:
                 errors.append(str(exc))
+        known_hypothesis_ids = {str(item.get("hypothesis_id")) for item in state.get("hypotheses") or []}
+        for raw in state.get("department_reports") or []:
+            try:
+                validate_department_report(
+                    DepartmentReport.model_validate(raw),
+                    events,
+                    assets,
+                    known_hypothesis_ids,
+                    departments_by_id(),
+                    state.get("incident_id"),
+                )
+            except InvalidAgentOutput as exc:
+                errors.append(str(exc))
         return {"errors": errors}
+
+    async def department_reporting(self, state: IntelligenceState) -> dict[str, Any]:
+        started = _now()
+        payload = _payload(state)
+        hypotheses = [Hypothesis.model_validate(item) for item in state.get("hypotheses") or []]
+        reports = build_department_reports(
+            payload,
+            hypotheses=hypotheses,
+            evidence_gaps=list(state.get("evidence_gaps") or []),
+        )
+        run = self._record_run(
+            state,
+            agent_name="department_reporting",
+            fallback_used=False,
+            retries=0,
+            started=started,
+        )
+        return {"department_reports": [item.model_dump(mode="json") for item in reports], **run}
 
     async def persist_results(self, state: IntelligenceState) -> dict[str, Any]:
         incident_id = state.get("incident_id")
@@ -670,10 +707,12 @@ class IntelligenceWorkflow:
         hyps = [Hypothesis.model_validate(item) for item in state.get("hypotheses") or []]
         scns = [CascadeScenario.model_validate(item) for item in state.get("cascade_scenarios") or []]
         recs = [ResponseRecommendation.model_validate(item) for item in state.get("candidate_actions") or []]
+        reports = [DepartmentReport.model_validate(item) for item in state.get("department_reports") or []]
         if incident_id:
             self.runtime.operational.replace_hypotheses(incident_id, hyps)
             self.runtime.operational.replace_scenarios(incident_id, scns)
             self.runtime.operational.replace_recommendations(incident_id, recs)
+            self.runtime.operational.replace_department_reports(incident_id, reports)
         if not graph_degraded:
             try:
                 for hyp in hyps:
@@ -698,6 +737,7 @@ class IntelligenceWorkflow:
                     "hypotheses": state.get("hypotheses") or [],
                     "cascade_scenarios": state.get("cascade_scenarios") or [],
                     "candidate_actions": state.get("candidate_actions") or [],
+                    "department_reports": state.get("department_reports") or [],
                     "severity_assessment": state.get("severity_assessment"),
                     "signal_analysis": state.get("signal_analysis"),
                     "fusion_decisions": state.get("fusion_decisions") or [],
