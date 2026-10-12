@@ -2,7 +2,7 @@
 
 <h1>Open Active Theory</h1>
 
-<p><strong>Daily Design .Art · WebGL 互动叙事与光学设计实验</strong></p>
+<p><strong>Daily Design .Art · WebGL interactive storytelling and optical design experiments</strong></p>
 <p>Explore the art of UI, one day at a time.</p>
 
 <p>
@@ -12,31 +12,31 @@
 </p>
 
 <p>
-  <a href="#快速开始">快速开始</a> ·
-  <a href="#预览">预览</a> ·
-  <a href="#技术实现">技术实现</a> ·
-  <a href="#自定义内容">自定义内容</a> ·
-  <a href="#开发与验证">开发与验证</a>
+  <a href="#quick-start">Quick Start</a> ·
+  <a href="#preview">Preview</a> ·
+  <a href="#technical-implementation">Technical Implementation</a> ·
+  <a href="#custom-content">Custom Content</a> ·
+  <a href="#development-and-validation">Development and Validation</a>
 </p>
 
 </div>
 
-![Daily Design .Art 品牌场景：折射 D 模型与滚动转场](docs/images/brand-scene.png)
+![Daily Design .Art brand scene: refractive D model and scroll transitions](docs/images/brand-scene.png)
 
-Open Active Theory 是一个可以独立克隆、构建和运行的 **Daily Design .Art 品牌网站**。项目基于 [Active Theory](https://activetheory.net/) 的公开 Hydra/WebGL 发布版，将品牌、模型、作品和媒体替换为自有 UI/UX 设计研究，同时保留原场景、镜头、粒子、流体、玻璃折射及交互机制。
+Open Active Theory is a **Daily Design .Art brand website** that can be cloned, built, and run independently. The project is based on the public Hydra/WebGL release from [Active Theory](https://activetheory.net/), replacing the brand, models, works, and media with original UI/UX design research while preserving the original scenes, camera paths, particles, fluid effects, glass refraction, and interaction mechanisms.
 
-源码、构建基线和运行资源均包含在仓库内。项目无需 API 密钥、在线 CMS 账户、相邻工作区或系统字体。
+Source code, the build baseline, and runtime assets are all included in the repository. The project does not require API keys, an online CMS account, adjacent workspace dependencies, or system fonts.
 
-## 项目特点
+## Project Highlights
 
-- **六段连续场景**：Home、About、Work、TreeScene、CleanRoom、Footer，通过滚动驱动镜头和相邻场景转场。
-- **实时光学材质**：折射、色散、流体扰动、粒子、Bloom 与光芒共同构成 WebGL 画面。
-- **完整作品交互**：14 项 UI/UX 研究，支持作品墙、标签筛选、本地检索、详情展开、全屏图片与深链接。
-- **自有品牌几何**：由斜体 D 的字体轮廓构建真实三维模型，适配不同场景的尺寸与材质。
-- **可维护的内容适配层**：品牌与作品集中配置，构建时检查核心视觉模块、场景参数和 GLSL 基线。
-- **桌面与移动布局**：保留原响应式分支、触摸交互、音乐控件和双端房间同步协议。
+- **Six continuous scenes**: Home, About, Work, TreeScene, CleanRoom, and Footer, driven by scroll and adjacent scene transitions.
+- **Real-time optical materials**: refraction, dispersion, fluid disturbance, particles, bloom, and glow combine to create the WebGL visual language.
+- **Complete work interactions**: 14 UI/UX studies with a work wall, tag filtering, local search, detail expansion, full-screen images, and deep links.
+- **Original brand geometry**: a real 3D model built from the italic D letterform outline, adapted to different scene sizes and materials.
+- **Maintainable content adaptation layer**: brand and project content are centrally configured, and the build validates core visual modules, scene parameters, and GLSL baselines.
+- **Desktop and mobile layouts**: preserves the original responsive branches, touch interactions, music controls, and dual-end room sync protocol.
 
-## 快速开始
+## Quick Start
 
 ### Urban Sentinel intelligence workflow
 
@@ -45,13 +45,13 @@ Signal Intelligence, Incident Fusion, Causal & Cascade Analysis, and Impact & Re
 runs and outputs. Start the Urban Sentinel API alongside this site (default `http://127.0.0.1:8000`);
 set `API_ORIGIN` when it runs elsewhere, for example `API_ORIGIN=http://127.0.0.1:8001`.
 
-### 环境要求
+### Requirements
 
-- **Node.js 20 或更新版本**；建议使用 Node.js 22，与 CI 环境一致。
-- **npm**，用于按 `package-lock.json` 安装依赖。
-- 支持 WebGL 的浏览器；实际画面与性能受硬件加速、GPU 档位及视口影响。
+- **Node.js 20 or newer**; Node.js 22 is recommended to match the CI environment.
+- **npm** for installing dependencies from `package-lock.json`.
+- A browser with WebGL support; final visuals and performance depend on hardware acceleration, GPU tier, and viewport.
 
-### 克隆并运行
+### Clone and Run
 
 ```bash
 git clone https://github.com/Snychng/open-active-theory.git
@@ -61,222 +61,222 @@ npm run build
 npm run dev
 ```
 
-启动后访问 **[http://localhost:4199/](http://localhost:4199/)**。在运行服务的终端按 `Ctrl+C` 停止。
+Then open **[http://localhost:4199/](http://localhost:4199/)**. Press `Ctrl+C` in the running terminal to stop the service.
 
-macOS / Linux 下可指定其他端口：
+On macOS / Linux you can set a different port:
 
 ```bash
 PORT=4200 npm run dev
 ```
 
-`npm run dev` 与 `npm start` 都启动 Node.js 服务。修改内容或构建脚本后，运行 `npm run build` 并刷新网页；当前开发服务不提供热更新。
+Both `npm run dev` and `npm start` start the Node.js service. After modifying content or build scripts, run `npm run build` and refresh the page; the current dev server does not provide hot reload.
 
-服务同时承载静态资源、深链接、本地检索和 WebSocket。完整运行请使用上述 Node.js 入口；单独托管 `public/` 只能提供静态资源，不能提供检索与同步服务。
+The service also hosts static assets, deep links, local search, and WebSocket communication. For a complete runtime, use the Node.js entry points above; hosting only `public/` provides static assets but not search and sync capabilities.
 
-## 预览
+## Preview
 
-以下均为当前网站的实际运行截图，采集于 2026-10-03。桌面视口为 **1440 × 900**，移动端为 **390 × 844** 的浏览器模拟；静态截图展示场景外观，完整动画与交互请在本地体验。
+The following are actual runtime screenshots of the current site, captured on 2026-10-03. The desktop viewport is **1440 × 900** and the mobile viewport is a simulated **390 × 844** browser; the static screenshots show the scene appearances, while the full animation and interactions should be experienced locally.
 
-| 首屏 · D 模型与粒子 | 作品墙 · 螺旋布局与折射卡片 |
+| Hero · D model and particles | Work wall · spiral layout and refractive cards |
 | --- | --- |
-| <img src="docs/images/home.png" width="380" alt="首屏 D 模型、粒子与双螺旋"> | <img src="docs/images/work.png" width="380" alt="UI/UX 作品墙与玻璃卡片"> |
+| <img src="docs/images/home.png" width="380" alt="Hero D model, particles, and double helix"> | <img src="docs/images/work.png" width="380" alt="UI/UX work wall and glass cards"> |
 
-| 光学实验 · 六边形空间 | 作品详情 · 静态封面与内容 |
+| Optical experiments · hexagonal space | Project details · static cover and content |
 | --- | --- |
-| <img src="docs/images/lab.png" width="380" alt="光学实验场景与六边形材质"> | <img src="docs/images/detail.png" width="380" alt="Dispersion 作品详情与全屏入口"> |
+| <img src="docs/images/lab.png" width="380" alt="Optical experiment scene and hexagonal material"> | <img src="docs/images/detail.png" width="380" alt="Dispersion detail view and fullscreen entry"> |
 
 <details>
-<summary><strong>查看移动端作品墙</strong></summary>
+<summary><strong>View the mobile work wall</strong></summary>
 
-<p><img src="docs/images/mobile-work.png" width="270" alt="移动端作品墙、筛选和检索入口"></p>
+<p><img src="docs/images/mobile-work.png" width="270" alt="Mobile work wall, filtering, and search entry"></p>
 
 </details>
 
-截图来源、采集条件和更新方式见 [展示资源说明](docs/images/README.md)。
+See [display resource notes](docs/images/README.md) for screenshot sources, capture conditions, and update methods.
 
-## 技术实现
+## Technical Implementation
 
-### 技术栈
+### Tech Stack
 
-| 层级 | 技术 | 职责 |
+| Layer | Technology | Responsibility |
 | --- | --- | --- |
-| 网页运行时 | JavaScript、Hydra、GLUI | 场景生命周期、状态、相机、渲染调度、文字与交互 |
-| 实时渲染 | WebGL、GLSL | 光学材质、GPU 粒子、流体、离屏纹理和后期合成 |
-| 内容与配置 | ES Modules、UIL、JSON | 品牌、作品、场景配置及资源映射 |
-| 素材构建 | Three.js、opentype、Sharp | D 模型、字体轮廓、字标贴图与图标生成 |
-| 本地服务 | Node.js HTTP、ws | 资源读取、Range、深链接、作品查询与房间同步 |
-| 工程验证 | Playwright、Node.js assert、GitHub Actions | 资源与参数核验、桌面/移动端交互和 CI |
+| Web runtime | JavaScript, Hydra, GLUI | Scene lifecycle, state, cameras, render scheduling, text, and interaction |
+| Real-time rendering | WebGL, GLSL | Optical materials, GPU particles, fluids, offscreen textures, and post-processing |
+| Content and configuration | ES Modules, UIL, JSON | Brand, works, scene config, and asset mapping |
+| Asset generation | Three.js, opentype, Sharp | D model, font outlines, monogram textures, and icon generation |
+| Local service | Node.js HTTP, ws | Asset serving, Range support, deep links, work queries, and room sync |
+| Engineering validation | Playwright, Node.js assert, GitHub Actions | Asset and parameter validation, desktop/mobile interaction checks, and CI |
 
-**Three.js 用于构建品牌几何；浏览器的场景渲染仍由 Hydra 完成。** opentype 使用 Three.js 附带的模块，具体依赖版本锁定在 `package-lock.json`。
+**Three.js is used to build the brand geometry; browser scene rendering is still handled by Hydra.** `opentype` is used through the Three.js bundle module, and the dependency version is locked in `package-lock.json`.
 
-### 1. 场景与渲染链路
+### 1. Scene and Rendering Pipeline
 
 ```mermaid
 flowchart LR
-  Input["滚动 / 指针 / 拖拽"] --> State["场景状态与相机"]
-  State --> Scene["几何 / GLUI / GPU 粒子"]
-  Scene --> Targets["相邻场景渲染纹理"]
-  Targets --> Optics["折射 / 色散 / 流体 / 后期"]
+  Input["Scroll / pointer / drag"] --> State["Scene state and camera"]
+  State --> Scene["Geometry / GLUI / GPU particles"]
+  Scene --> Targets["Adjacent scene render textures"]
+  Targets --> Optics["Refraction / dispersion / fluid / post-processing"]
   Optics --> Canvas["Canvas"]
 ```
 
-`FXScroll` 将滚动位置映射为场景进度、镜头位置和转场状态。相邻场景使用渲染纹理参与合成，保留原站的斜切、遮挡和光学过渡。页面沿用以下配置顺序：
+`FXScroll` maps scroll position to scene progression, camera placement, and transition states. Adjacent scenes use render textures in compositing to preserve the original site’s bevels, occlusion, and optical transitions. The page follows this configuration order:
 
-| 场景 | 原 `vh` 配置 | 内容与视觉 |
+| Scene | Original `vh` config | Content and visual treatment |
 | --- | --- | --- |
-| Home | 4 | 可拖拽的 D、粒子与双螺旋 |
-| About | 1 | 品牌文字、slogan 与折射 D |
-| Work | 10 | 14 项研究、螺旋作品墙与详情 |
-| TreeScene | 2 | 品牌模型与粒子场景 |
-| CleanRoom | 1.2 | 六边形光学空间与实验内容 |
-| Footer | 4 | 尾段场景与品牌收束 |
+| Home | 4 | Draggable D, particles, and double helix |
+| About | 1 | Brand text, slogan, and refractive D |
+| Work | 10 | 14 studies, spiral work wall, and details |
+| TreeScene | 2 | Brand model and particle scene |
+| CleanRoom | 1.2 | Hexagonal optical space and experiment content |
+| Footer | 4 | Closing scene and brand convergence |
 
-`vh` 为原引擎的场景配置值，实际高度与可见区间由滚动控制器和响应式布局计算。核心实现可从 [FXScroll](vendor/activetheory/modules/122-FXScroll.js) 与 [原发布配置](vendor/activetheory/uil.1780406240914.json) 开始阅读。
+`vh` is the original engine scene configuration value; the actual height and visible range are computed by the scroll controller and responsive layout. The core implementation can be read starting from [FXScroll](vendor/activetheory/modules/122-FXScroll.js) and the [original published configuration](vendor/activetheory/uil.1780406240914.json).
 
-### 2. 玻璃、粒子与指针流体
+### 2. Glass, Particles, and Pointer Fluid
 
-玻璃材质通过 GLSL 对场景纹理进行采样，结合折射、色散、法线和指针扰动生成光学变化。GLUI 与字体图集承载大量场景文字，检索输入和部分控件由 DOM 承载。
+The glass material samples the scene texture in GLSL and combines refraction, dispersion, normals, and pointer disturbances to generate optical variation. GLUI and the font atlas carry most scene text, while search inputs and some controls are rendered in the DOM.
 
-[Fluid](vendor/activetheory/modules/117-Fluid.js) 使用速度、染料、压力等离屏缓冲，执行旋度、涡量、散度、压力求解和平流计算。[MouseFluid](vendor/activetheory/modules/179-MouseFluid.js) 将指针位移和速度注入流场，供材质采样。粒子规模、DPR、帧率和后期效果由原 GPU 档位分支选择，因此不同设备的帧率和画面细节会有差别。
+[Fluid](vendor/activetheory/modules/117-Fluid.js) uses velocity, dye, pressure, and other offscreen buffers to perform curl, vorticity, divergence, pressure solve, and advection. [MouseFluid](vendor/activetheory/modules/179-MouseFluid.js) injects pointer displacement and velocity into the flow field for material sampling. Particle scale, DPR, frame rate, and post-processing are selected by the original GPU tier branches, so different devices can produce different frame rates and visual detail.
 
-光学 Shader、环境纹理及非内容材质参数沿用原发布版基线；构建与检查分别核对原 GLSL 指纹和非内容配置字段。
+The optical shaders, environment textures, and non-content material parameters continue to follow the original published baseline; build and validation check the original GLSL fingerprints and non-content configuration fields.
 
-### 3. 内容适配与构建
+### 3. Content Adaptation and Build
 
-[scripts/build.mjs](scripts/build.mjs) 从保存的发布版基线构建品牌网站：
+[scripts/build.mjs](scripts/build.mjs) builds the branded site from the saved published baseline:
 
-1. 读取 `src/content.mjs`、字体、轮廓、字标和封面。
-2. 在指定模块和 UIL 字段中替换品牌、作品、链接与媒体，找不到适配位置时直接报错。
-3. 生成 HTML、CMS JSON、图标、贴图和三维几何，写入 `public/`。
-4. 核对 **15 个核心视觉模块**、原场景顺序及 GLSL，并记录允许替换的内容字段。
+1. Reads `src/content.mjs`, fonts, outlines, monogram assets, and cover art.
+2. Replaces brand, work, link, and media content in dedicated modules and UIL fields; it throws immediately if a matching adaptation point is not found.
+3. Generates HTML, CMS JSON, icons, textures, and 3D geometry into `public/`.
+4. Verifies **15 core visual modules**, the original scene order, and GLSL while recording permissible content replacement fields.
 
-检查脚本逐字段比较配置：当前 **2578 项非内容 UIL 字段**保持原值，品牌、文字、模型与媒体字段单独记录。构建记录保存在 `.artifacts/adaptation-manifest.json`，方便追踪适配位置和资源指纹。
+The validation script compares configuration field by field: currently **2578 non-content UIL fields** remain unchanged, while brand, text, model, and media fields are tracked separately. The build record is saved to `.artifacts/adaptation-manifest.json` to trace adaptation points and asset fingerprints.
 
-### 4. 品牌 D 模型
+### 4. Brand D Model
 
-三维 D 来自 `src/assets/monogram-shape.json` 中的轮廓与孔洞。构建使用 Three.js 的 `Shape`、`Path` 和 `ExtrudeGeometry` 完成挤出、倒角、居中与法线计算，再分别生成 Home、TreeScene 和粒子场景需要的几何。
+The 3D D is derived from the contours and holes in `src/assets/monogram-shape.json`. The build uses Three.js `Shape`, `Path`, and `ExtrudeGeometry` to extrude, bevel, center, and compute normals, then generates the geometry needed for Home, TreeScene, and the particle scenes.
 
-模型适配原几何的尺寸、深度与中心约定，外部位置、旋转、镜头、材质和交互继续沿用原配置。Bodoni Moda 字体用于 D 图像，预先保存的字标 SVG 消除了系统字体依赖。
+The model matches the original geometry’s proportions, depth, and center conventions; the external position, rotation, camera, material, and interactions continue to follow the original configuration. Bodoni Moda is used for the D artwork, and a pre-generated monogram SVG avoids system font dependence.
 
-### 5. 静态封面与作品交互
+### 5. Static Covers and Work Interaction
 
-作品媒体使用 JPEG 封面，沿用原 `VideoTexture` 的纹理接口，并补全图片的动态 `src` 和可见性生命周期。每项作品具有独立媒体 URL，封面复用时也能按当前卡片激活淡入。
+Work media uses JPEG covers and continues to use the original `VideoTexture` interface, while adding the dynamic `src` and visibility lifecycle for images. Each work has an independent media URL; when a cover is reused, it can fade in based on the active card.
 
-作品墙保留相机路径、悬停和筛选流程；详情沿用展开、退出、文字及粒子动画，全屏媒体显示当前作品图片。生成物包含 14 项自有实验或明确标注的概念研究。
+The work wall preserves the camera path, hover states, and filtering flow. Details keep the expand/exit behavior, text, and particle animation, while full-screen media shows the current project image. The generated site contains 14 original experiments or clearly labeled concept studies.
 
-### 6. HTTP、检索与双端同步
+### 6. HTTP, Search, and Dual-Endpoint Sync
 
-[scripts/server.mjs](scripts/server.mjs) 提供项目的运行服务：
+[scripts/server.mjs](scripts/server.mjs) provides the running service for the project:
 
-- 静态文件、正确的资源 MIME 类型与 HTTP Range。
-- `/work/dispersion` 等深链接的页面回退。
-- `/api/assistant/*` 的本地查询协议：按作品名称、标签和描述做关键词匹配，支持部分中文关键词映射。
-- `/ws` 的房间协议：创建/加入房间、成员状态、消息广播及交互数据同步。
-- `/__health` 的服务与资源缺失统计。
+- Static files, correct resource MIME types, and HTTP Range support.
+- Page fallback for deep links such as `/work/dispersion`.
+- A local query protocol at `/api/assistant/*` that matches keywords against work names, tags, and descriptions, with partial Chinese keyword mapping.
+- A `/ws` room protocol for creating/joining rooms, member state tracking, message broadcast, and interaction data sync.
+- `/__health` service and missing resource statistics.
 
-检索线程与同步房间保存在进程内存中，服务重启后重置。这里提供的是本地关键词检索与房间服务，原站私有 AI 和远端后台未包含在仓库内。
+Search workers and sync rooms live in process memory and reset when the service restarts. This provides local keyword search and room services; the original site’s private AI and remote backend are not included in this repository.
 
-## 项目结构
+## Project Structure
 
 ```text
 open-active-theory/
 ├── src/
-│   ├── content.mjs              # 品牌、slogan、链接与 14 项研究
-│   └── assets/                  # 字体、轮廓、字标与封面输入
-├── vendor/activetheory/          # 发布版基线、模块、UIL 与来源记录
-├── public/                      # 网站生成物和必要运行资源
+│   ├── content.mjs              # Brand, slogan, links, and 14 studies
+│   └── assets/                  # Fonts, outlines, monograms, and cover inputs
+├── vendor/activetheory/          # Published baseline, modules, UIL, and source logs
+├── public/                      # Generated site and required runtime assets
 ├── scripts/
-│   ├── build.mjs                # 内容适配、几何与贴图构建
-│   ├── server.mjs               # HTTP、检索和 WebSocket
-│   ├── check.mjs                # 模块、参数、资源与服务检查
-│   ├── verify*.mjs              # 浏览器、同步、音乐与媒体检查
-│   └── test.mjs                 # 构建、临时服务与完整检查入口
-├── docs/images/                 # README 精选运行截图
+│   ├── build.mjs                # Content adaptation, geometry, and material generation
+│   ├── server.mjs               # HTTP, search, and WebSocket
+│   ├── check.mjs                # Module, parameter, asset, and service validation
+│   ├── verify*.mjs              # Browser, sync, music, and media validation
+│   └── test.mjs                 # Build, temporary service, and full validation entry
+├── docs/images/                 # Selected README screenshots
 ├── .github/workflows/check.yml  # GitHub Actions
-├── AGENTS.md                    # 项目维护约定
-└── THIRD_PARTY_NOTICES.md        # 第三方来源与许可说明
+├── AGENTS.md                    # Project maintenance conventions
+└── THIRD_PARTY_NOTICES.md       # Third-party source and license notices
 ```
 
-`node_modules/` 和 `.artifacts/` 不提交 Git。原工作区的其他原型、研究录屏、社交封面和平台请求记录也不包含在此仓库中。
+`node_modules/` and `.artifacts/` are not committed to Git. Other prototypes, research recordings, social cover artwork, and platform request logs from the original workspace also remain outside this repository.
 
-## 自定义内容
+## Custom Content
 
-| 需要修改的内容 | 编辑入口 |
+| Content to modify | Edit entry |
 | --- | --- |
-| 品牌、slogan、GitHub、作品名称/描述/标签 | [src/content.mjs](src/content.mjs) |
-| 封面与背景图片 | [src/assets/covers/](src/assets/covers/) 及作品配置中的媒体映射 |
-| D 轮廓、字标、字体 | [src/assets/](src/assets/) |
-| 内容适配与几何生成规则 | [scripts/build.mjs](scripts/build.mjs) |
-| 服务端查询和同步协议 | [scripts/server.mjs](scripts/server.mjs) |
+| Brand, slogan, GitHub, work names/descriptions/tags | [src/content.mjs](src/content.mjs) |
+| Cover and background images | [src/assets/covers/](src/assets/covers/) and the media mappings in project configs |
+| D outline, monogram, and font | [src/assets/](src/assets/) |
+| Content adaptation and geometry generation rules | [scripts/build.mjs](scripts/build.mjs) |
+| Server-side query and sync protocol | [scripts/server.mjs](scripts/server.mjs) |
 
-修改输入后执行：
+After modifying the inputs, run:
 
 ```bash
 npm run build
 ```
 
-品牌与作品修改集中在 `src/` 和构建适配层；`public/` 保存生成物，下一次构建会重新写入对应文件。涉及内容以外的镜头、材质或动效修改时，需要对照基线并同步相关验证，避免把品牌适配变成隐含的动画重写。
+Brand and work edits are centralized in `src/` and the build adaptation layer; `public/` stores generated files and the next build rewrites them. For changes beyond content—such as camera, material, or motion updates—you must compare against the baseline and run the relevant validation to avoid turning brand adaptation into an implicit animation rewrite.
 
-## 开发与验证
+## Development and Validation
 
-### 完整检查
+### Full Check
 
 ```bash
 npx playwright install chromium
 npm test
 ```
 
-`npm test` 自动构建、启动随机端口、执行资源/服务检查，以及桌面和模拟手机的六场景、拖拽、详情、联系、筛选、检索和四处卡片媒体激活检查，结束后关闭测试服务器。
+`npm test` automatically builds the site, starts a random port, runs asset and service validations, and checks the six scenes, drag actions, details, contact panel, filtering, search, and media activation on desktop and simulated mobile views before shutting the test server down.
 
-本机已有 Google Chrome 时可以使用：
+If Google Chrome is already installed locally, you can run:
 
 ```bash
 PLAYWRIGHT_CHANNEL=chrome npm test
 ```
 
-### 专项检查
+### Targeted Checks
 
-先运行 `npm run build` 和 `npm run dev`，再在另一个终端执行：
+First run `npm run build` and `npm run dev`, then execute the following in another terminal:
 
-| 命令 | 检查内容 |
+| Command | Checks |
 | --- | --- |
-| `npm run check` | 核心模块、UIL、GLSL 回读、资源、深链接、Range 与检索 |
-| `npm run verify` | 桌面/移动端场景、转场、拖拽、详情、筛选与检索 |
-| `npm run verify:media` | 四处 Work 位置的当前卡片媒体激活 |
-| `npm run verify:sync` | 两个浏览器上下文的入房、滚动与联系面板同步 |
-| `npm run verify:music` | 音乐初始化、开关、切歌与播放状态 |
+| `npm run check` | Core modules, UIL, GLSL re-read, assets, deep links, Range, and search |
+| `npm run verify` | Desktop/mobile scenes, transitions, drag, details, filtering, and search |
+| `npm run verify:media` | Current card media activation at four Work positions |
+| `npm run verify:sync` | Room entry, scroll, and contact panel sync across two browser contexts |
+| `npm run verify:music` | Music initialization, toggle, track change, and playback state |
 
-上述浏览器命令需要 Playwright Chromium，或设置 `PLAYWRIGHT_CHANNEL=chrome`。非默认端口可使用 `PREVIEW_URL`：
+The browser-based commands require Playwright Chromium or the `PLAYWRIGHT_CHANNEL=chrome` override. For non-default ports you can use `PREVIEW_URL`:
 
 ```bash
 PREVIEW_URL=http://localhost:4200 npm run verify
 ```
 
-### CI 与报告
+### CI and Reporting
 
-[GitHub Actions](https://github.com/Snychng/open-active-theory/actions/workflows/check.yml) 在 Ubuntu、Node.js 22 和 Playwright Chromium 上运行完整检查。CI 使用 Xvfb 与 Mesa 软件 OpenGL 提供 WebGL 上下文，保留原站对 SwiftShader 的设备检测。异步筛选和媒体淡入以实际完成状态等待，失败时上传诊断 JSON。
+[GitHub Actions](https://github.com/Snychng/open-active-theory/actions/workflows/check.yml) runs the full validation on Ubuntu, Node.js 22, and Playwright Chromium. CI uses Xvfb and Mesa software OpenGL to provide the WebGL context while retaining the original site’s SwiftShader device detection. Asynchronous filtering and media fade-ins wait for actual completion states; if a check fails, the diagnostic JSON is uploaded.
 
-报告与运行截图位于 `.artifacts/`。完整检查包含浏览器和媒体检查；同步与音乐为单独的专项命令。工程检查、静态截图、真实手机操作和用户视觉验收分别记录，不能互相替代。
+Reports and captured screenshots are stored in `.artifacts/`. The complete verification includes browser and media checks; sync and music are separate targeted commands. Engineering checks, static screenshots, real-device operation, and user visual acceptance are recorded separately and cannot replace one another.
 
-## 已知边界
+## Known Boundaries
 
-- 原站的私有 AI、后台和云端同步服务未包含在仓库内；本地查询与房间协议有明确的替代范围。
-- 发布版基线中的 `lab.gif` 和 `damaged_road_normal.jpg` 缺失，继续由原渲染器回退；相关检查保留这两个已知缺失项。
-- 随机粒子、GPU 档位、帧率、字体内容和自有模型轮廓会产生画面差异。模块与参数保持一致不等于每一帧像素一致。
-- 浏览器模拟的移动布局检查不代表真实手机验收；自动化音乐状态检查不代表扬声器输出已实测。
+- The original site’s private AI, backend, and cloud sync services are not included in the repository; the local query and room protocols have a clearly defined replacement scope.
+- The published baseline includes missing assets such as `lab.gif` and `damaged_road_normal.jpg`, which are still handled by the original renderer fallback; the validation retains these known missing items.
+- Random particles, GPU tier differences, frame rate, font content, and custom model outlines can produce visual variation. Matching modules and parameters does not guarantee identical pixels on every frame.
+- Browser-simulated mobile layout checks do not replace real-device validation; automated music-state checks do not confirm speaker output has been physically measured.
 
-## 贡献
+## Contributing
 
-欢迎通过 [Issues](https://github.com/Snychng/open-active-theory/issues) 提交问题或改进建议。报告视觉/交互问题时，请提供浏览器、GPU、视口、复现步骤与相关截图；提交代码修改时说明行为变化并运行受影响的检查。
+We welcome issues or improvement suggestions through [Issues](https://github.com/Snychng/open-active-theory/issues). When reporting visual or interaction problems, include the browser, GPU, viewport, reproduction steps, and any relevant screenshots. When submitting code changes, describe the behavior change and run the relevant validation.
 
-维护约定见 [AGENTS.md](AGENTS.md)，已有实现取舍见 [.agents/notes](.agents/notes/README.md)。新增素材需记录来源，敏感信息、账户文件和完整测试产物不进入仓库。
+See [AGENTS.md](AGENTS.md) for maintenance conventions, and [.agents/notes](.agents/notes/README.md) for existing implementation trade-offs. New assets must document their source; sensitive information, account files, and full test artifacts must not be added to the repository.
 
-## 来源与许可
+## Sources and Licensing
 
-本项目基于 Active Theory 公开发布版 **`1780406240914`**，快照时间为 **2026-09-30**。运行时、Shader、场景参数、部分模型、纹理、字体图集和音乐保留各自来源与版权声明；本仓库没有为整个发布包附加统一 MIT 许可。
+This project is based on the public Active Theory release **`1780406240914`**, with a snapshot date of **2026-09-30**. Runtime code, shaders, scene parameters, some models, textures, font atlases, and music retain their own source and copyright notices; this repository does not attach a single unified MIT license to the full published package.
 
-- 来源与依赖说明：[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
-- 发布版来源、指纹与凭证移除记录：[vendor/activetheory/SOURCE.json](vendor/activetheory/SOURCE.json)。
-- Bodoni Moda 字体许可：[SIL Open Font License](src/assets/OFL.txt)。
+- Source and dependency notes: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
+- Published source, fingerprint, and credential removal record: [vendor/activetheory/SOURCE.json](vendor/activetheory/SOURCE.json)
+- Bodoni Moda font license: [SIL Open Font License](src/assets/OFL.txt)
 
-Daily Design .Art 品牌内容、D 几何、字标和封面适配由本项目提供。作品属于自有实验或概念研究。
+The Daily Design .Art brand content, D geometry, monogram, and cover adaptation are provided by this project. The works are original experiments or concept studies.
