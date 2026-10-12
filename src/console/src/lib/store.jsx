@@ -30,7 +30,20 @@ const initialState = {
   timeWindow: '60m',
   area: 'All areas',
   search: '',
-  layers: { incidents: true, candidates: true, gauges: true, drains: true, assets: true, impacts: true, rainfall: false },
+  // Layer keys are shared with the map's visibility pairs and the intelligence-layer panel.
+  // A layer with no supplying source defaults to off so the map never implies live coverage.
+  layers: {
+    incidents: true, candidates: true, assets: true, impactZones: true, dependencies: true,
+    emergencyAccess: true, rainfall: true, hazard: true, indicators: true,
+    crowd: false, transit: false, power: false, airQuality: false,
+    facilities: false, sensorHealth: false, cascadePaths: false
+  },
+  // Live connector output lands here and is merged into the same projection as the replayed
+  // scenario, so a live record and a seeded one are filtered and drawn by one code path.
+  liveEvents: [],
+  // 2D indicator overlay state. Pausing freezes every CSS animation in place rather than
+  // removing the indicators, so the operator keeps the information without the motion.
+  fx: { paused: false, lowPerformance: false, hideUnselected: false },
   // Simulated outage state driven by the Data Sources screen.
   simulatedOutage: [],
   dismissedBanner: false,
@@ -51,6 +64,8 @@ function reducer(state, action) {
     case 'setArea': return { ...state, area: action.value };
     case 'setSearch': return { ...state, search: action.value };
     case 'toggleLayer': return { ...state, layers: { ...state.layers, [action.layer]: !state.layers[action.layer] } };
+case 'setFx': return { ...state, fx: { ...state.fx, [action.key]: action.value } };
+case 'toggleFx': return { ...state, fx: { ...state.fx, [action.key]: !state.fx[action.key] } };
     case 'toggleOutage': return {
       ...state,
       simulatedOutage: state.simulatedOutage.includes(action.sourceId)
