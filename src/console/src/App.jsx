@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import Shell from './lib/Shell.jsx';
 import { useApp } from './lib/store.jsx';
@@ -16,7 +17,8 @@ import Settings from './routes/Settings.jsx';
 import Kitchen from './routes/Kitchen.jsx';
 import Graph from './routes/Graph.jsx';
 import TrackReport from './routes/TrackReport.jsx';
-import { useLocation } from 'react-router-dom';
+import CrowdAnalysis from './routes/CrowdAnalysis.jsx';
+import TrafficAnalysis from './routes/TrafficAnalysis.jsx';
 
 export default function App() {
   const { signedIn } = useApp();
@@ -32,6 +34,8 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/overview" element={<Overview />} />
           <Route path="/operations" element={<Operations />} />
+          <Route path="/crowd" element={<CrowdAnalysis />} />
+          <Route path="/traffic" element={<TrafficAnalysis />} />
           <Route path="/incidents" element={<IncidentList />} />
           <Route path="/incidents/:incidentId" element={<IncidentDetail />} />
           <Route path="/incidents/:incidentId/evidence" element={<Evidence />} />

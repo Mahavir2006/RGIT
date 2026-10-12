@@ -104,7 +104,9 @@ RGIT/
 │   │   ├── health.py            # GET /health
 │   │   ├── events.py            # event submit + query + detail
 │   │   ├── sources.py           # source list, health, trigger ingest, runs
-│   │   └── reports.py           # citizen report submission
+│   │   ├── reports.py           # citizen report submission
+│   │   ├── crowd.py             # crowd density & gathering endpoint
+│   │   └── traffic_vision.py    # traffic & vehicle detection endpoint
 │   ├── ingestion/
 │   │   ├── base.py              # SourceAdapter contract + AdapterResult
 │   │   ├── registry.py          # source_id -> adapter resolution
@@ -114,6 +116,8 @@ RGIT/
 │   │   ├── traffic.py           # traffic
 │   │   ├── water.py             # water levels (CSV/JSON dataset)
 │   │   ├── citizen.py           # citizen reports
+│   │   ├── crowd.py             # CrowdDensityAdapter (best_crowdd.onnx)
+│   │   ├── traffic_vision.py    # TrafficVisionAdapter (improved_best.onnx)
 │   │   └── replay.py            # deterministic fixture replay
 │   ├── services/
 │   │   ├── event_service.py     # validate -> dedupe -> persist orchestration
@@ -130,12 +134,19 @@ RGIT/
 │   │       └── duplicate_repository.py
 │   └── processing/
 │       └── __init__.py          # deliberate seam for Milestone 2
+├── best_crowdd.onnx             # ONNX crowd head detection model
+├── improved_best.onnx           # ONNX YOLOv8 8-class vehicle detection model
+├── protest.mp4                  # Sample protest / gathering video fixture
+├── traffic.mp4                  # Sample urban intersection traffic video fixture
 ├── alembic/
 │   ├── env.py
 │   ├── script.py.mako
 │   └── versions/
-├── data/samples/                # sanitised fixtures for all five categories
+├── data/samples/                # sanitised fixtures for all categories
 ├── scripts/
+│   ├── crowd_annotate_h264.py   # Crowd annotator & video renderer (H.264)
+│   ├── crowd_count_demo.py      # Quick CLI crowd counter
+│   ├── traffic_annotate_h264.py # Traffic & vehicle annotator (H.264)
 │   ├── provision_db.ps1
 │   └── provision_db.sh
 └── tests/
@@ -366,6 +377,7 @@ Errors use the same envelope with `error` populated:
 | `POST` | `/api/v1/ingest/{source}` | **write** | Trigger one ingestion run. `{source}` is a full id (`weather.live`, `airquality.live`, `traffic.live`, `water.dataset`, `citizen.manual`, `replay.all`) or an unambiguous alias (`weather`, `air_quality`, `traffic`, `water`, `citizen`, `replay`) |
 | `POST` | `/api/v1/events` | **write** | Submit canonical or manual events |
 | `POST` | `/api/v1/reports` | **write** | Submit a citizen report |
+| `POST` | `/api/v1/verification/image` | public or read-keyed | Bounded image triage with the optional XproAI checkpoint and C2PA SDK |
 | `GET` | `/api/v1/events` | public | Paginated/filtered event query |
 | `GET` | `/api/v1/events/{event_id}` | public | Event detail and provenance |
 | `GET` | `/api/v1/ingestion/runs` | public | Recent ingestion runs and outcomes |
@@ -407,6 +419,82 @@ curl "http://127.0.0.1:8000/api/v1/events?source_category=water&page=1&page_size
 ```bash
 curl http://127.0.0.1:8000/api/v1/sources/health
 ```
+
+### Image verification
+
+The console Verification page sends original image bytes to `POST /api/v1/verification/image`.
+The app uses the bundled `app/xproai_best.pt` by default; set `XPROAI_CHECKPOINT` only to use
+another XproAI v3 checkpoint. Install the optional
+dependencies with `pip install -e ".[image-verification]"`. The endpoint caps uploads at 15 MB
+and decoded images at 30 megapixels. C2PA verification uses the `c2pa-python` SDK; configure
+`C2PA_SETTINGS_FILE` with the SDK's trust settings when your deployment needs an explicit trust
+store. Claims are treated as cryptographically verified only when the SDK reports a valid state.
+
+The supplied v3 CNN is marked retired by its source project and has poor reported real-world
+performance. Its score is displayed only as a review indicator; all uploaded evidence remains
+subject to human verification. No C2PA manifest is not evidence that an image is authentic.
+
+### Computer Vision & Edge AI Pipelines (Crowd Density & Traffic Flow)
+
+Two specialized ONNX computer vision models are integrated directly into the ingestion subsystem, intelligence workflow, and operations console:
+
+#### 1. Crowd Density & Gathering Intelligence (`best_crowdd.onnx`)
+- **Task**: Real-time crowd head detection and spatial density estimation.
+- **Model format**: ONNX (`[1, 3, 640, 640]` float input, 1 class: `head`).
+- **Sample Video**: `protest.mp4` (civil gathering / demonstration scenario).
+- **Ingestion Adapter**: `app.ingestion.crowd.CrowdDensityAdapter` (Source ID: `video.crowd_density`)
+  - Emits `crowd_density_observed` canonical events with metrics: `crowd_count`, `density_per_m2`, `anomaly_score`, `congestion_level` (`NORMAL`, `ELEVATED`, `SURGE`, `CRITICAL`).
+  - Detects rapid count surges (>2× rolling baseline) and flags anomaly indicators for causal clustering.
+- **REST Endpoints**:
+  - `POST /api/crowd/analyze` — Upload video or analyze reference feed; returns per-frame timeline, peak counts, and anomaly spike timestamps.
+  - `GET /api/crowd/status` — Model availability and backend execution provider status.
+  - `GET /api/crowd/video?annotated=true` — Stream raw or browser-annotated H.264 video.
+- **Console Route**: `/crowd` — Interactive dashboard with dual-stream video playback, rolling count graph, incident surge flags, and hypothesis integration.
+
+#### 2. Traffic Flow & Vehicle Congestion Intelligence (`improved_best.onnx`)
+- **Task**: Multi-class vehicle detection, vehicle composition analysis, and urban bottleneck scoring.
+- **Model format**: ONNX YOLOv8 (`[1, 3, 640, 640]` dynamic batch input, 8 classes: `auto`, `bus`, `car`, `lcv`, `motorcycle`, `multiaxle`, `tractor`, `truck`).
+- **Sample Video**: `traffic.mp4` (busy multi-lane urban intersection).
+- **Ingestion Adapter**: `app.ingestion.traffic_vision.TrafficVisionAdapter` (Source ID: `video.traffic_flow`)
+  - Emits `traffic_flow_observed` canonical events with per-class breakdowns, `total_vehicles`, `pcu_weighted_flow` (Passenger Car Units), and `congestion_level` (`LOW`, `MODERATE`, `HIGH`, `SEVERE`).
+  - Identifies heavy transit blocks (buses, trucks, multiaxle) impacting emergency response route clearance.
+- **REST Endpoints**:
+  - `POST /api/traffic-vision/analyze` — Executes vehicle detection across video frames; returns class distribution, timeline curves, and bottleneck status.
+  - `GET /api/traffic-vision/status` — Checks ONNX session, classes, and execution target.
+  - `GET /api/traffic-vision/video?annotated=true` — Stream annotated video with vehicle bounding boxes and congestion indicators.
+- **Console Route**: `/traffic` — Dedicated traffic console featuring synchronized video playback, per-class counts, congestion metrics, bottleneck timeline, and route impact summaries.
+
+#### Teammate Reproduction Guide
+
+To run or reproduce the vision pipeline locally:
+
+1. **Install Python dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   # or with optional group:
+   pip install -e ".[vision]"
+   ```
+2. **Generate / Re-render annotated H.264 browser videos** (optional, pre-generated in `data/` and `public/assets/`):
+   ```bash
+   # Crowd gathering annotation (protest.mp4 -> data/crowd_output.mp4):
+   python scripts/crowd_annotate_h264.py
+
+   # Traffic flow annotation (traffic.mp4 -> data/traffic_output.mp4):
+   python scripts/traffic_annotate_h264.py
+   ```
+3. **Start the FastAPI backend**:
+   ```bash
+   uvicorn app.main:app --port 8000 --reload
+   ```
+4. **Build & start the frontend**:
+   ```bash
+   npm ci
+   npm run build
+   npm run dev
+   ```
+5. **Open in browser**:
+   - Crowd gathering analysis: <http://localhost:4199/crowd>
+   - Traffic & vehicles analysis: <http://localhost:4199/traffic>
 
 ---
 

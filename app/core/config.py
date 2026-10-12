@@ -8,6 +8,7 @@ runs, and reported by *name only* — never by value.
 from __future__ import annotations
 
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
 from pydantic import Field, field_validator
@@ -40,6 +41,10 @@ class Settings(BaseSettings):
 
     cors_origins: list[str] = Field(default_factory=list)
     max_payload_bytes: int = 262_144  # 256 KiB
+
+    # Use the checkpoint bundled with this app unless deployment config overrides it.
+    xproai_checkpoint: str | None = str(Path(__file__).resolve().parents[1] / "xproai_best.pt")
+    c2pa_settings_file: str | None = None
 
     # ----------------------------------------------------------- database
     database_url: str | None = None
@@ -125,6 +130,18 @@ class Settings(BaseSettings):
     # --------------------------------------------------------- freshness
     default_freshness_sla_seconds: int = 900
     freshness_sla_seconds: dict[str, int] = Field(default_factory=dict)
+
+    @field_validator("debug", mode="before")
+    @classmethod
+    def _parse_debug_mode(cls, value: object) -> object:
+        """Accept the common release-mode value used by IDE launch environments."""
+        if isinstance(value, str):
+            normalized = value.strip().lower()
+            if normalized in {"release", "production", "prod", "off", "no"}:
+                return False
+            if normalized in {"debug", "development", "dev", "on", "yes"}:
+                return True
+        return value
 
     @field_validator("cors_origins", "aq_pollutants", "traffic_segment_ids", "scheduler_sources",
                      mode="before")

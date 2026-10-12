@@ -36,3 +36,7 @@ htmlcov/
 node_modules/
 .artifacts/
 .DS_Store
+
+# --- models & generated media (optional: track with git-lfs if pushing to remote) ---
+# data/crowd_output.mp4
+# data/traffic_output.mp4

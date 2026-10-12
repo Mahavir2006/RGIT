@@ -69,7 +69,8 @@ async function assistant(req, res, action) {
 const CONSOLE_ROUTES = [
   /^\/overview$/, /^\/operations$/, /^\/incidents$/, /^\/incidents\/[^/]+$/,
   /^\/incidents\/[^/]+\/(evidence|cascade|graph)$/, /^\/graph$/, /^\/graph\/[^/]+$/, /^\/response$/, /^\/events$/,
-  /^\/sources$/, /^\/settings$/, /^\/login$/, /^\/track-report$/, /^\/kitchen$/, /^\/app\/kitchen$/
+  /^\/sources$/, /^\/settings$/, /^\/login$/, /^\/track-report$/, /^\/kitchen$/, /^\/app\/kitchen$/,
+  /^\/crowd$/, /^\/traffic$/
 ];
 const consoleIndex = path.join(publicDir, 'assets/sentinel/index.html');
 

@@ -26,9 +26,12 @@ from sqlalchemy import text
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api import anomalies as anomalies_api
+from app.api import crowd as crowd_api
+from app.api import traffic_vision as traffic_vision_api
 from app.api import events as events_api
 from app.api import health as health_api
 from app.api import incidents as incidents_api
+from app.api import verification as verification_api
 from app.api import processing as processing_api
 from app.api import reports as reports_api
 from app.api import sources as sources_api
@@ -309,6 +312,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.include_router(anomalies_api.router, prefix=prefix)
     # Registered before the intelligence layer's /incidents routes; the paths do not overlap.
     application.include_router(incidents_api.router, prefix=prefix)
+    application.include_router(verification_api.router, prefix=prefix)
+    application.include_router(crowd_api.router, prefix=prefix)
+    application.include_router(crowd_api.router, prefix="/api")
+    application.include_router(traffic_vision_api.router, prefix=prefix)
+    application.include_router(traffic_vision_api.router, prefix="/api")
 
     _mount_intelligence(application, current)
     return application

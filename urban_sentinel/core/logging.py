@@ -3,8 +3,11 @@ from __future__ import annotations
 import json
 import logging
 import sys
-from datetime import UTC, datetime
-from typing import Any
+try:
+    from datetime import UTC, datetime
+except ImportError:
+    from datetime import datetime, timezone
+    UTC = timezone.utc
 
 SENSITIVE_KEYS = frozenset(
     {

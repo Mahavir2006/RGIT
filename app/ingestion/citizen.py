@@ -67,7 +67,7 @@ class CitizenReportAdapter(SourceAdapter):
             (CanonicalEvent, was_redacted)
         """
         received = submitted_at or utc_now()
-        reported_at = report.resolved_reported_at()
+        reported_at = received if report.reported_at is None else report.resolved_reported_at()
 
         # Scrub obvious personal data before it is ever stored or logged.
         text = report.text

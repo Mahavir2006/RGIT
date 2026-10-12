@@ -104,6 +104,9 @@ class EventType(str, Enum):
     PUBLIC_HEALTH_REPORTED = "public_health_reported"
     OTHER_REPORT = "other_report"
 
+    # --- crowd & vision
+    CROWD_DENSITY_OBSERVED = "crowd_density_observed"
+
     # --- system / health (mostly produced by adapters)
     SENSOR_OFFLINE = "sensor_offline"
     SENSOR_STALE = "sensor_stale"
@@ -129,6 +132,7 @@ LOCATION_OPTIONAL_TYPES: frozenset[EventType] = frozenset({
     EventType.WEATHER_CONDITION_OBSERVED,
     EventType.POWER_OUTAGE_REPORTED,
     EventType.OTHER_REPORT,
+    EventType.CROWD_DENSITY_OBSERVED,
 })
 
 # Event types that carry no numeric reading at all. For any other type, an event with zero
@@ -193,6 +197,8 @@ UNIT_ALIASES: dict[str, str] = {
     "min": "min", "minute": "min", "minutes": "min",
     "h": "h", "hr": "h", "hour": "h", "hours": "h",
     "d": "d", "day": "d", "days": "d",
+    # counts
+    "count": "count", "heads": "count", "people": "count",
 }
 
 # Multiplicative conversions into the canonical unit for a measurement family.
@@ -210,6 +216,7 @@ _LINEAR_CONVERSIONS: dict[str, list[tuple[float, str]]] = {
     "kn": [(0.539957, "km/h"), (1.150779, "mph"), (0.514444, "m/s"), (1.0, "kn")],
     "hPa": [(1.0, "hPa"), (100.0, "Pa")],
     "Pa": [(0.01, "hPa"), (1.0, "Pa")],
+    "count": [(1.0, "count")],
 }
 
 # Which canonical unit each measurement family prefers. Longer, more specific prefixes come
@@ -223,6 +230,8 @@ CANONICAL_UNIT_FOR_PREFIX: dict[str, str] = {
     "temperature": "c",
     "pressure": "hPa",
     "concentration": "ug/m3",
+    "head_count": "count",
+    "crowd": "count",
 }
 
 MEASUREMENT_NAME_PREFIXES = tuple(CANONICAL_UNIT_FOR_PREFIX.keys())

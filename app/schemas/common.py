@@ -51,6 +51,7 @@ class SourceCategory(str, Enum):
     TRAFFIC = "traffic"
     WATER = "water"
     CITIZEN = "citizen"
+    CROWD = "crowd"
     REPLAY = "replay"  # meta-source: deterministic fixture playback
     SYSTEM = "system"  # internal/health events
 

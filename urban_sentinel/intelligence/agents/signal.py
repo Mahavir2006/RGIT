@@ -63,6 +63,25 @@ def deterministic_signal(payload: ProcessedWorkflowInput) -> SignalAnalysis:
                     missing_fields=["location"],
                 )
             )
+        if event.event_type == EventType.CROWD or event.unit == "count":
+            count_val = int(event.numeric_value) if event.numeric_value is not None else 0
+            facts.append(
+                ExtractedFact(
+                    event_id=event.event_id,
+                    statement=f"Vision crowd observation: {count_val} individuals detected ({event.source_id}).",
+                    kind="observation",
+                )
+            )
+
+    for rec in payload.anomaly_records:
+        if "crowd" in rec.detector.lower() or "spike" in rec.description.lower():
+            facts.append(
+                ExtractedFact(
+                    event_id=rec.event_id,
+                    statement=f"Crowd surge alert: {rec.description} (severity: {rec.severity}).",
+                    kind="interpretation",
+                )
+            )
 
     for health in payload.source_health:
         if health.status in {SourceHealthStatus.OFFLINE, SourceHealthStatus.DEGRADED}:
