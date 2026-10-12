@@ -7,6 +7,7 @@ a replay instance of the same provider never collide, and a category filter is a
 from __future__ import annotations
 
 from app.ingestion.citizen import CitizenReportAdapter
+from app.ingestion.crowd import CrowdDensityAdapter
 from app.ingestion.openweather import OpenWeatherAdapter
 from app.ingestion.openaq import OpenAQAdapter
 from app.ingestion.registry import SourceRegistry, registry
@@ -23,6 +24,7 @@ _ADAPTER_CLASSES = (
     WaterDatasetAdapter,
     CitizenReportAdapter,
     ReplayAdapter,
+    CrowdDensityAdapter,
 )
 
 

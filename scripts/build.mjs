@@ -1,4 +1,4 @@
-﻿// å†…å®¹é€‚é…å±‚ï¼šä»Žå·²ä¿å­˜çš„åŽŸå‘å¸ƒç‰ˆç”Ÿæˆï¼Œè§†è§‰ç®—æ³•ã€GLSL å’Œåœºæ™¯é…ç½®ä¿æŒåŽŸå€¼ã€‚
+// å†…å®¹é€‚é…å±‚ï¼šä»Žå·²ä¿å­˜çš„åŽŸå‘å¸ƒç‰ˆç”Ÿæˆï¼Œè§†è§‰ç®—æ³•ã€GLSL å’Œåœºæ™¯é…ç½®ä¿æŒåŽŸå€¼ã€‚
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -225,7 +225,7 @@ base.dispose();
 
 // The Urban Sentinel console is a separate Vite/React bundle. It is built last so the
 // WebGL runtime is already verified by the time any heavier dependency graph is pulled in.
-const CONSOLE_ROUTES = ['/overview', '/operations', '/incidents', '/incidents/:id', '/incidents/:id/evidence', '/incidents/:id/graph', '/graph', '/incidents/:id/cascade', '/response', '/events', '/sources', '/settings', '/login', '/kitchen', '/app/kitchen'];
+const CONSOLE_ROUTES = ['/overview', '/operations', '/incidents', '/incidents/:id', '/incidents/:id/evidence', '/incidents/:id/graph', '/graph', '/incidents/:id/cascade', '/response', '/events', '/sources', '/settings', '/login', '/kitchen', '/app/kitchen', '/crowd', '/traffic'];
 const consoleConfig = path.join(root, 'src/console/vite.config.js');
 // Rollup does not fail on an undefined identifier used inside JSX - it treats it as a global,
 // so a missing icon import ships a bundle that throws only at runtime. Checked before build.

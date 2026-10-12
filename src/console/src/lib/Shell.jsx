@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Map, ListChecks, TriangleAlert, GitBranch, Waypoints,
   Rows3, Database, Settings, PanelLeftClose, PanelLeft, Search, Bell,
-  LogOut, ChevronDown, Check, Moon, Sun, ChefHat, Share2, Waves
+  LogOut, ChevronDown, Check, Moon, Sun, ChefHat, Share2, Waves, Users, Car
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button, Input, Badge } from '@/components/ui';
@@ -25,6 +25,8 @@ const GROUPS = [
       { to: '/overview', label: 'Overview', icon: LayoutDashboard },
       { href: 'https://yekyahai.vercel.app/', label: 'Dam Failure', icon: Waves, external: true },
       { to: '/operations', label: 'Live operations', icon: Map },
+      { to: '/crowd', label: 'Crowd & vision', icon: Users },
+      { to: '/traffic', label: 'Traffic & vehicles', icon: Car },
       { to: '/response', label: 'Response center', icon: ListChecks }
     ]
   },

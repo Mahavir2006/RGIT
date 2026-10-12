@@ -40,6 +40,11 @@ image-verification = [
     "Pillow>=10.0",
     "c2pa-python>=0.28,<1.0",
 ]
+vision = [
+    "opencv-python>=4.8,<5.0",
+    "onnxruntime>=1.16,<2.0",
+    "numpy>=1.24,<3.0",
+]
 
 [project.scripts]
 urban-sentinel = "urban_sentinel.api.main:run"

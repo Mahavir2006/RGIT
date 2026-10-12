@@ -230,6 +230,11 @@ def _default_thresholds() -> list[ThresholdRule]:
             source="Illustrative bands loosely after India NAQI PM2.5 breakpoints (24 h basis); "
                    "applied to 1 h averages for demo only",
         ),
+        ThresholdRule(
+            rule_id="head_count_high", measurement="head_count", unit="count",
+            bands=_b((25.0, "LOW"), (40.0, "MEDIUM"), (60.0, "HIGH"), (100.0, "CRITICAL")),
+            source="Demonstration crowd density thresholds based on head count detections",
+        ),
     ]
 
 
