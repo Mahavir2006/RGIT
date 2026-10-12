@@ -44,6 +44,16 @@ async def analyze_incident(
     return AnalyzeResponse(workflow_id=workflow_id, status=str(state.get("status", "queued")))
 
 
+@router.get("/workflows/latest")
+async def get_latest_workflow(
+    service: IntelligenceService = Depends(get_service),
+) -> dict:
+    state = service.operational.get_latest_workflow()
+    if state is None:
+        return {"workflow_id": None, "status": "idle", "agent_runs": []}
+    return _workflow_view(str(state.get("workflow_id")), state)
+
+
 @router.get("/workflows/{workflow_id}")
 async def get_workflow(
     workflow_id: str,
@@ -52,6 +62,10 @@ async def get_workflow(
     state = service.get_workflow(workflow_id)
     if state is None:
         raise HTTPException(status_code=404, detail="Unknown workflow")
+    return _workflow_view(workflow_id, state)
+
+
+def _workflow_view(workflow_id: str, state: dict) -> dict:
     return {
         "workflow_id": workflow_id,
         "status": state.get("status"),
@@ -59,5 +73,14 @@ async def get_workflow(
         "errors": state.get("errors") or [],
         "review_required": state.get("review_required"),
         "agent_runs": state.get("agent_runs") or [],
+        "skip_signal": state.get("skip_signal", False),
+        "skip_fusion": state.get("skip_fusion", False),
+        "signal_analysis": state.get("signal_analysis"),
+        "fusion_decisions": state.get("fusion_decisions") or [],
+        "hypotheses": state.get("hypotheses") or [],
+        "cascade_scenarios": state.get("cascade_scenarios") or [],
+        "severity_assessment": state.get("severity_assessment"),
+        "candidate_actions": state.get("candidate_actions") or [],
+        "operator_summary": state.get("operator_summary"),
         "schema_version": state.get("schema_version"),
     }

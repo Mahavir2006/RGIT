@@ -650,6 +650,7 @@ a batch are processed in event-time order, so late arrivals do not change rule o
 | `GET` | `/api/v1/incidents/candidates` (`event_id`, `incident_id`, `outcome`, `min_score`), `/api/v1/incidents/candidates/{id}` (score breakdown) | public |
 | `GET` | `/api/v1/incidents/{id}/workflow-input` — exact payload handed to the agents | public |
 | `POST` | `/api/v1/incidents/{id}/analyze` — run the intelligence workflow (`{"wait": true}` for demos) | write |
+| `GET` | `/api/v1/intelligence/workflows/latest` — latest workflow and live specialist run/results for the Kitchen floor | public |
 | — | mounted from `urban_sentinel/`: `/api/v1/intelligence/*`, `/api/v1/incidents/{id}/hypotheses·cascade·recommendations·review` | as upstream |
 
 ```bash

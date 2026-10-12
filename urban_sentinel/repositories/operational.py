@@ -84,6 +84,11 @@ class OperationalRepository:
     def get_workflow(self, workflow_id: str) -> IntelligenceState | None:
         return self.workflows.get(workflow_id)
 
+    def get_latest_workflow(self) -> IntelligenceState | None:
+        """Return the most recently created workflow for live operator views."""
+        with self._lock:
+            return next(reversed(self.workflows.values()), None)
+
     def replace_hypotheses(self, incident_id: str, items: list[Hypothesis]) -> None:
         by_id = {item.hypothesis_id: item for item in self.hypotheses.get(incident_id, [])}
         merged: dict[str, Hypothesis] = dict(by_id)

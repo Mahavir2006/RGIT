@@ -194,6 +194,11 @@ class IntelligenceWorkflow:
         )
         runs = list(state.get("agent_runs") or [])
         runs.append(run.model_dump(mode="json"))
+        # Publish each specialist completion so operator clients can follow a running workflow.
+        self.runtime.operational.save_workflow(
+            {**state, "workflow_id": state["workflow_id"], "agent_runs": runs,
+             "status": WorkflowStatus.RUNNING.value}
+        )
         log_event(
             logger,
             "agent_run",
