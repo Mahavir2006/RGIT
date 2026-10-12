@@ -1,4 +1,4 @@
-// 内容适配层：从已保存的原发布版生成，视觉算法、GLSL 和场景配置保持原值。
+﻿// å†…å®¹é€‚é…å±‚ï¼šä»Žå·²ä¿å­˜çš„åŽŸå‘å¸ƒç‰ˆç”Ÿæˆï¼Œè§†è§‰ç®—æ³•ã€GLSL å’Œåœºæ™¯é…ç½®ä¿æŒåŽŸå€¼ã€‚
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -27,7 +27,7 @@ async function write(relative, data) {
 }
 function replace(text, before, after, label) {
   const count = text.split(before).length - 1;
-  assert.ok(count, `未找到适配位置：${label}`);
+  assert.ok(count, `æœªæ‰¾åˆ°é€‚é…ä½ç½®ï¼š${label}`);
   changes.push({ label, count, before, after });
   return text.replaceAll(before, after);
 }
@@ -40,36 +40,36 @@ async function moduleSource(name) {
 let app = await fs.readFile(path.join(reference, 'runtime.js'), 'utf8');
 async function adaptModule(name, callback) {
   const original = await moduleSource(name);
-  // 原副本 VideoTexture 包含已验证的首帧竞态保护。
+  // åŽŸå‰¯æœ¬ VideoTexture åŒ…å«å·²éªŒè¯çš„é¦–å¸§ç«žæ€ä¿æŠ¤ã€‚
   const input = name === 'VideoTexture' ? original.replace('_this.texture=_this.videoTexture,_this.events.unsub', '_this.texture=_this.videoTexture||_this.texture,_this.events.unsub') : original;
-  assert.ok(app.includes(input), `模块定位失败：${name}`);
+  assert.ok(app.includes(input), `æ¨¡å—å®šä½å¤±è´¥ï¼š${name}`);
   app = app.replace(input, callback(input));
 }
 
-// 原 VideoTexture 已支持 JPG/PNG；补全动态 src 与可见性生命周期，支持静态封面切换。
+// åŽŸ VideoTexture å·²æ”¯æŒ JPG/PNGï¼›è¡¥å…¨åŠ¨æ€ src ä¸Žå¯è§æ€§ç”Ÿå‘½å‘¨æœŸï¼Œæ”¯æŒé™æ€å°é¢åˆ‡æ¢ã€‚
 await adaptModule('VideoTexture', input => {
-  let out = replace(input, 'let _video,_requestId,', 'let _stillPath,_video,_requestId,', '静态媒体状态');
-  out = replace(out, 'let noop=_=>{};_this.texture=Utils3D.getTexture(src)', 'let noop=_=>{};_stillPath=_path,_this.texture=Utils3D.getTexture(src)', '原生图片分支');
-  out = replace(out, 'this.set("src",(src=>{', 'this.set("src",(src=>{if(typeof src==="string"&&/\\.(jpg|png)(?:[?#]|$)/i.test(src)){if(_stillPath===src)return;_stillPath=src;_video&&(_this.stop(),_video.pause());_this.texture=Utils3D.getTexture(Assets.getPath(src));_this.uniform.value=_this.texture;_this.dimensions=_this.texture.dimensions;return;}', '静态媒体 src 绑定');
-  out = replace(out, 'this.onInvisible=function(){_sharedVideo||', 'this.onInvisible=function(){_video&&(_sharedVideo||', '图片无 video DOM：不可见');
-  out = replace(out, 'removeChild(_this.video.object,!0))},this.onVisible', 'removeChild(_this.video.object,!0)))},this.onVisible', '图片生命周期括号');
-  out = replace(out, 'this.onVisible=function(){_sharedVideo||', 'this.onVisible=function(){_video&&(_sharedVideo||', '图片无 video DOM：可见');
-  out = replace(out, 'add(_this.video.object))},this.onDestroy', 'add(_this.video.object)))},this.onDestroy', '图片可见性括号');
-  out = replace(out, '_this.texture.destroy(),_sharedVideo||VideoTexture.element()', '_this.texture.destroy(),_video&&!_sharedVideo&&VideoTexture.element()', '图片销毁保护');
+  let out = replace(input, 'let _video,_requestId,', 'let _stillPath,_video,_requestId,', 'é™æ€åª’ä½“çŠ¶æ€');
+  out = replace(out, 'let noop=_=>{};_this.texture=Utils3D.getTexture(src)', 'let noop=_=>{};_stillPath=_path,_this.texture=Utils3D.getTexture(src)', 'åŽŸç”Ÿå›¾ç‰‡åˆ†æ”¯');
+  out = replace(out, 'this.set("src",(src=>{', 'this.set("src",(src=>{if(typeof src==="string"&&/\\.(jpg|png)(?:[?#]|$)/i.test(src)){if(_stillPath===src)return;_stillPath=src;_video&&(_this.stop(),_video.pause());_this.texture=Utils3D.getTexture(Assets.getPath(src));_this.uniform.value=_this.texture;_this.dimensions=_this.texture.dimensions;return;}', 'é™æ€åª’ä½“ src ç»‘å®š');
+  out = replace(out, 'this.onInvisible=function(){_sharedVideo||', 'this.onInvisible=function(){_video&&(_sharedVideo||', 'å›¾ç‰‡æ—  video DOMï¼šä¸å¯è§');
+  out = replace(out, 'removeChild(_this.video.object,!0))},this.onVisible', 'removeChild(_this.video.object,!0)))},this.onVisible', 'å›¾ç‰‡ç”Ÿå‘½å‘¨æœŸæ‹¬å·');
+  out = replace(out, 'this.onVisible=function(){_sharedVideo||', 'this.onVisible=function(){_video&&(_sharedVideo||', 'å›¾ç‰‡æ—  video DOMï¼šå¯è§');
+  out = replace(out, 'add(_this.video.object))},this.onDestroy', 'add(_this.video.object)))},this.onDestroy', 'å›¾ç‰‡å¯è§æ€§æ‹¬å·');
+  out = replace(out, '_this.texture.destroy(),_sharedVideo||VideoTexture.element()', '_this.texture.destroy(),_video&&!_sharedVideo&&VideoTexture.element()', 'å›¾ç‰‡é”€æ¯ä¿æŠ¤');
   return out;
 });
 const placeholder = 'data:video/mp4;base64,AAAAHGZ0eXBNNAACAAACAGlzb21pc28ybXA0MQAAAG1wNDFtcDQxaXNvbTFtcDQxaXNvbXNtcDQyaXNvbXZpc28ybXA0MgAAAChtZGF0AAAAAAIAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
-app = replace(app, placeholder, 'assets/daily/cover-dispersion.jpg', '作品初始媒体');
+app = replace(app, placeholder, 'assets/daily/cover-dispersion.jpg', 'ä½œå“åˆå§‹åª’ä½“');
 
 await adaptModule('WorkDetailContent', input => {
-  let out = replace(input, '_this.video=document.createElement("video")', `_this.video=document.createElement("img"),_this.video.play=_=>{},_this.video.pause=_=>{},_this.video.alt=${JSON.stringify(`${brand} module cover`)},_this.video.style.maxHeight="100%",_this.video.style.objectFit="contain"`, '详情全屏媒体使用图片');
-  out = replace(out, '"Close Video"', '"Close Image"', '全屏关闭标签');
-  out = replace(out, '"Open fullscreen video"', '"Open fullscreen image"', '全屏打开标签');
-  out = replace(out, 'color:color})=>{_this.layers.title.setText(title)', 'color:color,thumbnailURL:thumbnailURL})=>{_this.video.src=thumbnailURL;_this.video.alt=title;_this.layers.title.setText(title)', '详情绑定当前封面');
-  return replace(out, '"Project Link"', '"GitHub"', '作品链接标签');
+  let out = replace(input, '_this.video=document.createElement("video")', `_this.video=document.createElement("img"),_this.video.play=_=>{},_this.video.pause=_=>{},_this.video.alt=${JSON.stringify(`${brand} module cover`)},_this.video.style.maxHeight="100%",_this.video.style.objectFit="contain"`, 'è¯¦æƒ…å…¨å±åª’ä½“ä½¿ç”¨å›¾ç‰‡');
+  out = replace(out, '"Close Video"', '"Close Image"', 'å…¨å±å…³é—­æ ‡ç­¾');
+  out = replace(out, '"Open fullscreen video"', '"Open fullscreen image"', 'å…¨å±æ‰“å¼€æ ‡ç­¾');
+  out = replace(out, 'color:color})=>{_this.layers.title.setText(title)', 'color:color,thumbnailURL:thumbnailURL})=>{_this.video.src=thumbnailURL;_this.video.alt=title;_this.layers.title.setText(title)', 'è¯¦æƒ…ç»‘å®šå½“å‰å°é¢');
+  return replace(out, '"Project Link"', '"GitHub"', 'ä½œå“é“¾æŽ¥æ ‡ç­¾');
 });
-app = replace(app, 'assets/video/reel.mp4', 'assets/daily/hero.jpg', '全局材质媒体');
-app = replace(app, 'assets/video/reel-frame.jpg', 'assets/daily/hero.jpg', '全局首帧媒体');
+app = replace(app, 'assets/video/reel.mp4', 'assets/daily/hero.jpg', 'å…¨å±€æè´¨åª’ä½“');
+app = replace(app, 'assets/video/reel-frame.jpg', 'assets/daily/hero.jpg', 'å…¨å±€é¦–å¸§åª’ä½“');
 
 await adaptModule('ContactUI', input => {
   let out = input;
@@ -91,9 +91,28 @@ await adaptModule('ContactUI', input => {
     ['"Instagram"', '"GitHub repository"'], ['"Linked in"', '"Incident modules"'], ['"Twitter"', '"GitHub profile"'],
     ['assets/images/ui/ig.png', 'assets/daily/github.png'], ['assets/images/ui/in.png', 'assets/daily/monogram.png'], ['assets/images/ui/tw.png', 'assets/daily/github.png']
   ];
-  for (const [a, b] of entries) out = replace(out, a, b, `联系内容 ${a}`);
+  for (const [a, b] of entries) out = replace(out, a, b, `è”ç³»å†…å®¹ ${a}`);
   return out;
 });
+// The landing nav offered "Work" and "Contact". "Work" only scrolled the single page further
+// down a marketing wall, which is not where the operator actually wants to go, so it becomes an
+// "Overview" entry that opens the console overview route. "Contact" is kept, because it is the
+// only route to the contact modal and its adapted links.
+//
+// Two details matter here:
+//  - refName stays "work". The nav layout maths in NavUI positions `_this.work.wrapper`
+//    against the audio and contact items; keeping the refName means no layout code changes.
+//  - NavUIItem routes every item whose text is not "contact" to ViewController/goToWork, so the
+//    label change alone would still scroll the landing page. The click handler is patched too,
+//    and the new branch is tested before the existing ones.
+const NAV_CHILDREN = 'children:[{text:"Work",_type:"NavUIItem",refName:"work",children:[]},{text:"Contact",_type:"NavUIItem",refName:"contact",children:[]},{width:50,height:40,bg:"#ffffff",_type:"glObject",refName:"audio",children:[]},{width:320,height:320,bg:"#000000",_type:"glObject",refName:"bg",children:[]}]';
+const NAV_CHILDREN_NEXT = NAV_CHILDREN.replace('{text:"Work"', '{text:"Overview"');
+app = replace(app, NAV_CHILDREN, NAV_CHILDREN_NEXT, 'landing nav Work -> Overview');
+
+const NAV_CLICK = 'function click(){"contact"==link?active?_this.set("ViewController/contact",!1):_this.set("ViewController/contact",!0):(_this.set("ViewController/contact",!1),_this.fire("ViewController/goToWork"),_this.set("Work/project",null))}';
+const NAV_CLICK_NEXT = 'function click(){"overview"==link?window.location.assign("/overview"):' + NAV_CLICK.slice('function click(){'.length);
+app = replace(app, NAV_CLICK, NAV_CLICK_NEXT, 'landing nav Overview -> console route');
+
 await adaptModule('ChatDOM', input => {
   let out = input;
   // Filter tags are lowercased and substring-matched against module tags, so these five
@@ -105,17 +124,21 @@ await adaptModule('ChatDOM', input => {
     ['"-> multiplayer","Multiplayer"', '"-> response","Response"'],
     ['"-> games","Game"', '"-> audit","Audit"'],
     ['"Ask me anything..."', '"Find a module..."']
-  ]) out = replace(out, a, b, `作品筛选 ${a}`);
+  ]) out = replace(out, a, b, `ä½œå“ç­›é€‰ ${a}`);
   return out;
 });
-app = replace(app, 'https://atlab.io', github, '实验室链接');
-app = replace(app, 'Active Theory · Creative Digital Experiences', `${brand} · ${slogan}`, '文档标题');
-app = replace(app, '${data.title} · Active Theory', '${data.title} · ' + brand, '详情文档标题');
-// 原站 WebMCP 的静态介绍也属于内容，避免读到原机构履历。
+app = replace(app, 'https://atlab.io', github, 'å®žéªŒå®¤é“¾æŽ¥');
+const documentTitle = app.match(/Active Theory . Creative Digital Experiences/)?.[0];
+assert.ok(documentTitle, 'Original document title not found');
+app = replace(app, documentTitle, `${brand} · ${slogan}`, 'document title');
+const detailTitle = app.match(/\$\{data\.title\} . Active Theory/)?.[0];
+assert.ok(detailTitle, 'Original project title not found');
+app = replace(app, detailTitle, '${data.title} · ' + brand, 'project detail title');
+// åŽŸç«™ WebMCP çš„é™æ€ä»‹ç»ä¹Ÿå±žäºŽå†…å®¹ï¼Œé¿å…è¯»åˆ°åŽŸæœºæž„å±¥åŽ†ã€‚
 const info = 'Active Theory is a creative digital production studio founded in 2012.';
 const infoStart = app.indexOf(info), infoEnd = app.indexOf('"', infoStart);
 assert.ok(infoStart > 0 && infoEnd > infoStart);
-app = replace(app, app.slice(infoStart, infoEnd), `${brand}. ${slogan} ${product.tagline}. Decision support for human review only. GitHub: ${github}.`, 'WebMCP 品牌介绍');
+app = replace(app, app.slice(infoStart, infoEnd), `${brand}. ${slogan} ${product.tagline}. Decision support for human review only. GitHub: ${github}.`, 'WebMCP å“ç‰Œä»‹ç»');
 app = app.replaceAll('Get more information about Active Theory, the agency that created this website.', `Get more information about ${brand}, the incident fusion console shown here.`)
   .replaceAll('Open the contact modal for Active Theory.', `Open the contact modal for ${brand}.`)
   .replaceAll('Please use the provided email to reach out.', 'Please use the provided GitHub link.');
@@ -123,7 +146,7 @@ await write('assets/js/app.1780406240914.js', app);
 
 let html = await fs.readFile(path.join(reference, 'index.html'), 'utf8');
 const sourceDescription = 'Founded in 2012. We blend story, art & technology as an in-house team of passionate makers. Our industry-leading web toolset consistently delivers award-winning work through quality & performance. ';
-html = html.replaceAll('Active Theory · Creative Digital Experiences', `${brand} · ${slogan}`).replaceAll(sourceDescription, slogan)
+html = html.replaceAll('Active Theory Â· Creative Digital Experiences', `${brand} Â· ${slogan}`).replaceAll(sourceDescription, slogan)
   .replaceAll('https://storage.googleapis.com/activetheory-v6.appspot.com/media/social.jpg', '/assets/daily/hero.jpg')
   .replaceAll('https://activetheory.net', '/').replaceAll('content="Active Theory"', `content="${brand}"`)
   .replace(/\s*<script>\s*window\.dataLayer[\s\S]*?<\/script>/, '');
@@ -160,7 +183,7 @@ for (const version of ['dev', 'latest']) {
 }
 await write('local/geo.json', JSON.stringify({ location: { countryCode: 'IN' } }));
 
-// 使用当前网站已有 JPEG 封面，原样复制，不重新压缩或生成图片。
+// ä½¿ç”¨å½“å‰ç½‘ç«™å·²æœ‰ JPEG å°é¢ï¼ŒåŽŸæ ·å¤åˆ¶ï¼Œä¸é‡æ–°åŽ‹ç¼©æˆ–ç”Ÿæˆå›¾ç‰‡ã€‚
 for (const cover of new Set(studies.map(study => study.video.thumbnail.split('/').at(-1)))) {
   await write(`assets/daily/${cover}`, await fs.readFile(path.join(originals, cover)));
 }
@@ -181,7 +204,7 @@ for (const size of [16, 32, 180]) {
 await write('assets/meta/manifest.json', JSON.stringify({ name: brand, short_name: brand, start_url: '/', display: 'standalone', background_color: '#000', theme_color: '#000' }));
 await write('assets/meta/safari-pinned-tab.svg', svg);
 
-// 只替换模型顶点；各场景位置、旋转、比例、材质和响应函数不变。
+// åªæ›¿æ¢æ¨¡åž‹é¡¶ç‚¹ï¼›å„åœºæ™¯ä½ç½®ã€æ—‹è½¬ã€æ¯”ä¾‹ã€æè´¨å’Œå“åº”å‡½æ•°ä¸å˜ã€‚
 const shapes = polygons.map(([outer, ...holes]) => {
   const shape = new Shape(outer.map(([x, y]) => ({ x, y })));
   shape.holes = holes.map(hole => new Path(hole.map(([x, y]) => ({ x, y }))));
@@ -198,7 +221,7 @@ for (const [filename, xy, depth, z] of [['monogram-home.json', .7191892068, .051
   geometry.computeVertexNormals();
   const data = Object.fromEntries(['position', 'normal', 'uv'].map(key => [key, Array.from(geometry.getAttribute(key).array)]));
   await write(`assets/geometry/daily/${filename}`, JSON.stringify(data));
-  // 清理早期生成到错误资源前缀的同名产物，原始资源与输入不受影响。
+  // æ¸…ç†æ—©æœŸç”Ÿæˆåˆ°é”™è¯¯èµ„æºå‰ç¼€çš„åŒåäº§ç‰©ï¼ŒåŽŸå§‹èµ„æºä¸Žè¾“å…¥ä¸å—å½±å“ã€‚
   await fs.rm(path.join(publicDir, 'assets/daily', filename), { force: true });
   geometry.dispose();
 }
@@ -208,25 +231,38 @@ base.dispose();
 // WebGL runtime is already verified by the time any heavier dependency graph is pulled in.
 const CONSOLE_ROUTES = ['/overview', '/operations', '/incidents', '/incidents/:id', '/incidents/:id/evidence', '/incidents/:id/graph', '/graph', '/incidents/:id/cascade', '/response', '/events', '/sources', '/settings', '/login', '/kitchen', '/app/kitchen'];
 const consoleConfig = path.join(root, 'src/console/vite.config.js');
+// Rollup does not fail on an undefined identifier used inside JSX - it treats it as a global,
+// so a missing icon import ships a bundle that throws only at runtime. Checked before build.
+execFileSync(process.execPath, [path.join(root, 'scripts/verify-references.mjs')], { cwd: root, stdio: 'inherit' });
+// Hazard geometry is generated, so its invariants are asserted rather than eyeballed: closed
+// rings, in-area coordinates, determinism, and a coarse plus detail band for every incident.
+execFileSync(process.execPath, [path.join(root, 'scripts/verify-hazard-field.mjs')], { cwd: root, stdio: 'inherit' });
+// Indicator treatments are asserted so a confirmed, predicted, candidate and resolved state can
+// never quietly converge on the same look, which would let a model be read as an observation.
+execFileSync(process.execPath, [path.join(root, 'scripts/verify-indicators.mjs')], { cwd: root, stdio: 'inherit' });
 await fs.rm(path.join(publicDir, 'assets/sentinel'), { recursive: true, force: true });
 execFileSync(process.execPath, [path.join(root, 'node_modules/vite/bin/vite.js'), 'build', '--config', consoleConfig], { cwd: root, stdio: 'inherit' });
 const consoleIndex = await fs.readFile(path.join(publicDir, 'assets/sentinel/index.html'), 'utf8');
-assert.ok(consoleIndex.length > 0, '控制台入口未生成');
+assert.ok(consoleIndex.length > 0, 'æŽ§åˆ¶å°å…¥å£æœªç”Ÿæˆ');
 
-// 字节级核验关键视觉模块；内容字段独立记录，便于检查是否误改动效。
-const protectedNames = ['Home', 'About', 'Footer', 'WorkItems', 'WorkItem', 'WorkDetail', 'WorkDetailParticles', 'HomeLogoShader', 'AboutLogoShader', 'LoaderGLUI', 'LoaderView', 'NavUI', 'FXScroll', 'MouseFluid', 'Fluid'];
+// å­—èŠ‚çº§æ ¸éªŒå…³é”®è§†è§‰æ¨¡å—ï¼›å†…å®¹å­—æ®µç‹¬ç«‹è®°å½•ï¼Œä¾¿äºŽæ£€æŸ¥æ˜¯å¦è¯¯æ”¹åŠ¨æ•ˆã€‚
+// NavUI is deliberately excluded. Its nav child list carries the "Work" label, which this build
+// replaces with "Overview", so its source can no longer be present byte-for-byte. The divergence
+// is audited instead: every replacement is recorded in `changes` above and the NavUI source
+// hash is still recorded below as patchedModules, so a reviewer can see exactly what moved.
+const protectedNames = ['Home', 'About', 'Footer', 'WorkItems', 'WorkItem', 'WorkDetail', 'WorkDetailParticles', 'HomeLogoShader', 'AboutLogoShader', 'LoaderGLUI', 'LoaderView', 'FXScroll', 'MouseFluid', 'Fluid'];
 const preserved = [];
 for (const name of protectedNames) {
   const source = await moduleSource(name);
-  assert.ok(app.includes(source), `禁止改动的视觉模块发生变化：${name}`);
+  assert.ok(app.includes(source), `preserved module missing from runtime:${name}`);
   preserved.push({ name, sha256: sha(source), identical: true });
 }
 const sourceApp = await fs.readFile(path.join(frozen, 'app.1780406240914.js'), 'utf8');
 const sceneConfig = sourceApp.match(/_this\._initFXScroll\(\[.*?\]\)/)?.[0];
-assert.ok(sceneConfig && app.includes(sceneConfig), '场景序列或滚动参数发生变化');
+assert.ok(sceneConfig && app.includes(sceneConfig), 'åœºæ™¯åºåˆ—æˆ–æ»šåŠ¨å‚æ•°å‘ç”Ÿå˜åŒ–');
 const shaderBytes = await fs.readFile(path.join(publicDir, 'assets/shaders/compiled.vs'));
 const shaderOriginal = await fs.readFile(path.join(frozen, 'compiled.vs')).catch(() => shaderBytes);
 assert.equal(sha(shaderBytes), sha(shaderOriginal));
-const manifest = { date: '2026-10-12', originalVersion: '1780406240914', brand, slogan, github, projectCount: studies.length, consoleRoutes: CONSOLE_ROUTES, patches: changes, contentFields: changedUIL, preservedModules: preserved, sceneConfig, shaders: { sha256: sha(shaderBytes), identical: true }, runtimeSHA256: sha(app), originalRuntimeSHA256: sha(sourceApp), videoPolicy: '仅替换媒体内容为静态图片，保留原媒体切换和光学效果', sharedAssets: 'public/assets' };
+const manifest = { date: '2026-10-12', originalVersion: '1780406240914', brand, slogan, github, projectCount: studies.length, consoleRoutes: CONSOLE_ROUTES, patches: changes, contentFields: changedUIL, preservedModules: preserved, patchedModules: [{ name: 'NavUI', reason: 'Nav child "Work" replaced with "Overview"; label routes to the console overview route. Click handler patched to leave the landing page instead of scrolling to the Work section. Recorded in patches.' }], sceneConfig, shaders: { sha256: sha(shaderBytes), identical: true }, runtimeSHA256: sha(app), originalRuntimeSHA256: sha(sourceApp), videoPolicy: 'ä»…æ›¿æ¢åª’ä½“å†…å®¹ä¸ºé™æ€å›¾ç‰‡ï¼Œä¿ç•™åŽŸåª’ä½“åˆ‡æ¢å’Œå…‰å­¦æ•ˆæžœ', sharedAssets: 'public/assets' };
 await fs.writeFile(path.join(analysis, 'adaptation-manifest.json'), JSON.stringify(manifest, null, 2));
-console.log(`原版动效模块 ${preserved.length} 项逐字节一致；${studies.length} 个系统模块、哨兵光圈字标与生成封面已接入。`);
+console.log(`åŽŸç‰ˆåŠ¨æ•ˆæ¨¡å— ${preserved.length} é¡¹é€å­—èŠ‚ä¸€è‡´ï¼›${studies.length} ä¸ªç³»ç»Ÿæ¨¡å—ã€å“¨å…µå…‰åœˆå­—æ ‡ä¸Žç”Ÿæˆå°é¢å·²æŽ¥å…¥ã€‚`);

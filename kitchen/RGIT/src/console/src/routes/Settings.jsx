@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check, X, ShieldCheck, Lock, TriangleAlert } from 'lucide-react';
 import { PageHeader, PageBody } from '@/lib/Shell.jsx';
+import { EmptyState } from '@/components/blocks.jsx';
 import {
   Panel, Tabs, Badge, Button, DataTable, Metric, Field, TextArea,
   PermissionDenied, Note, stagger, fade

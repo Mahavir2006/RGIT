@@ -14,6 +14,9 @@
     "verify:media": "node scripts/verify-media.mjs",
     "test": "node scripts/test.mjs",
     "verify:console": "node scripts/verify-console.mjs",
+    "verify:refs": "node scripts/verify-references.mjs",
+    "verify:hazard": "node scripts/verify-hazard-field.mjs",
+    "verify:indicators": "node scripts/verify-indicators.mjs",
     "generate:assets": "node scripts/generate-mark.mjs && node scripts/generate-wordmark.mjs"
   },
   "dependencies": {
