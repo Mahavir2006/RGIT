@@ -1,0 +1,42 @@
+{
+  "fixture": "weather",
+  "description": "Sanitised synthetic weather observations. Synthetic data - not live observations.",
+  "synthetic": true,
+  "events": [
+    {
+      "source_id": "weather.replay",
+      "source_event_id": "wx-001",
+      "event_type": "rainfall_observed",
+      "event_time": "2026-10-12T08:30:00+05:30",
+      "location": { "latitude": 19.0760, "longitude": 72.8777, "accuracy_m": 4000, "place_id": "mumbai-andheri-east" },
+      "measurements": [
+        { "name": "rainfall_1h", "value": 12.5, "unit": "mm", "aggregation": "accumulation", "period_seconds": 3600 }
+      ],
+      "notes": "Light rain beginning."
+    },
+    {
+      "source_id": "weather.replay",
+      "source_event_id": "wx-002",
+      "event_type": "rainfall_observed",
+      "event_time": "2026-10-12T09:00:00+05:30",
+      "location": { "latitude": 19.0760, "longitude": 72.8777, "accuracy_m": 4000, "place_id": "mumbai-andheri-east" },
+      "measurements": [
+        { "name": "rainfall_1h", "value": 28.4, "unit": "mm", "aggregation": "accumulation", "period_seconds": 3600 },
+        { "name": "temperature", "value": 26.5, "unit": "c", "aggregation": "instantaneous" }
+      ],
+      "notes": "Rain intensifying."
+    },
+    {
+      "source_id": "weather.replay",
+      "source_event_id": "wx-003",
+      "event_type": "temperature_observed",
+      "event_time": "2026-10-12T09:15:00+05:30",
+      "location": { "latitude": 19.0760, "longitude": 72.8777, "accuracy_m": 4000, "place_id": "mumbai-andheri-east" },
+      "measurements": [
+        { "name": "temperature", "value": 25.1, "unit": "c", "aggregation": "instantaneous" },
+        { "name": "humidity", "value": 91.0, "unit": "%", "aggregation": "instantaneous" }
+      ],
+      "notes": "Temperature dropping, humidity high."
+    }
+  ]
+}

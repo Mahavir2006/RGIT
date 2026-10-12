@@ -1,0 +1,150 @@
+{
+  "fixture": "monsoon_waterlogging",
+  "description": "Combined monsoon waterlogging scenario across all five source categories. Synthetic data - not live observations.",
+  "synthetic": true,
+  "notes": "Timeline: 08:30 rain begins, 08:45 PM2.5 rise, 08:50 gauge 0.62m, 09:10 gauge 0.88m, 09:12 citizen waterlogging report, 09:20 traffic 0.24 ratio, 09:30 gauge 1.24m and gauge WGD-11 goes silent. The 09:30 water reading arrives out of order (late) in shuffled replays.",
+  "events": [
+    {
+      "source_id": "weather.replay",
+      "source_event_id": "scn-001",
+      "event_type": "rainfall_observed",
+      "event_time": "2026-10-12T08:30:00+05:30",
+      "location": { "latitude": 19.0760, "longitude": 72.8777, "accuracy_m": 4000, "place_id": "mumbai-andheri-east" },
+      "measurements": [
+        { "name": "rainfall_1h", "value": 12.5, "unit": "mm", "aggregation": "accumulation", "period_seconds": 3600 }
+      ],
+      "notes": "Rain begins."
+    },
+    {
+      "source_id": "airquality.replay",
+      "source_event_id": "scn-002",
+      "event_type": "air_quality_observed",
+      "event_time": "2026-10-12T08:45:00+05:30",
+      "location": { "latitude": 19.1136, "longitude": 72.8697, "accuracy_m": 150, "place_id": "aq-station-andheri" },
+      "measurements": [
+        { "name": "pm25_concentration", "value": 58.0, "unit": "ug/m3", "aggregation": "average", "period_seconds": 3600 }
+      ],
+      "notes": "PM2.5 baseline."
+    },
+    {
+      "source_id": "water.replay",
+      "source_event_id": "scn-003",
+      "event_type": "water_level_observed",
+      "event_time": "2026-10-12T08:50:00+05:30",
+      "location": { "latitude": 19.0760, "longitude": 72.8777, "accuracy_m": 20, "place_id": "WGD-04" },
+      "measurements": [
+        { "name": "water_level", "value": 0.62, "unit": "m", "aggregation": "instantaneous" },
+        { "name": "water_level_threshold", "value": 0.75, "unit": "m", "aggregation": "instantaneous" }
+      ],
+      "notes": "Below alert threshold."
+    },
+    {
+      "source_id": "weather.replay",
+      "source_event_id": "scn-004",
+      "event_type": "rainfall_observed",
+      "event_time": "2026-10-12T09:00:00+05:30",
+      "location": { "latitude": 19.0760, "longitude": 72.8777, "accuracy_m": 4000, "place_id": "mumbai-andheri-east" },
+      "measurements": [
+        { "name": "rainfall_1h", "value": 28.4, "unit": "mm", "aggregation": "accumulation", "period_seconds": 3600 },
+        { "name": "temperature", "value": 26.5, "unit": "c", "aggregation": "instantaneous" }
+      ],
+      "notes": "Rain intensifying."
+    },
+    {
+      "source_id": "water.replay",
+      "source_event_id": "scn-005",
+      "event_type": "water_level_observed",
+      "event_time": "2026-10-12T09:10:00+05:30",
+      "location": { "latitude": 19.0760, "longitude": 72.8777, "accuracy_m": 20, "place_id": "WGD-04" },
+      "measurements": [
+        { "name": "water_level", "value": 0.88, "unit": "m", "aggregation": "instantaneous" },
+        { "name": "water_level_threshold", "value": 0.75, "unit": "m", "aggregation": "instantaneous" }
+      ],
+      "notes": "Above alert threshold."
+    },
+    {
+      "source_id": "citizen.replay",
+      "source_event_id": "scn-006",
+      "event_type": "waterlogging_reported",
+      "event_time": "2026-10-12T09:12:00+05:30",
+      "location": { "latitude": 19.0760, "longitude": 72.8777, "accuracy_m": 30 },
+      "area_reference": "Andheri East",
+      "text": "Road near the metro station is under knee-deep water.",
+      "quality_flags": ["citizen_unverified"],
+      "notes": "First citizen report. Unverified."
+    },
+    {
+      "source_id": "traffic.replay",
+      "source_event_id": "scn-007",
+      "event_type": "traffic_congestion_observed",
+      "event_time": "2026-10-12T09:20:00+05:30",
+      "location": { "latitude": 19.1197, "longitude": 72.8464, "place_id": "seg-andheri-link" },
+      "measurements": [
+        { "name": "speed", "value": 14.5, "unit": "km/h", "aggregation": "instantaneous" },
+        { "name": "free_flow_speed", "value": 60.0, "unit": "km/h", "aggregation": "instantaneous" },
+        { "name": "speed_ratio", "value": 0.2417, "unit": "ratio", "aggregation": "instantaneous" }
+      ],
+      "notes": "Congestion on Andheri Link Road."
+    },
+    {
+      "source_id": "water.replay",
+      "source_event_id": "scn-008",
+      "event_type": "water_level_observed",
+      "event_time": "2026-10-12T09:30:00+05:30",
+      "location": { "latitude": 19.0760, "longitude": 72.8777, "accuracy_m": 20, "place_id": "WGD-04" },
+      "measurements": [
+        { "name": "water_level", "value": 1.24, "unit": "m", "aggregation": "instantaneous" },
+        { "name": "water_level_threshold", "value": 0.75, "unit": "m", "aggregation": "instantaneous" }
+      ],
+      "notes": "Rising sharply. This record is delivered late in shuffled replays."
+    },
+    {
+      "source_id": "airquality.replay",
+      "source_event_id": "scn-009",
+      "event_type": "air_quality_observed",
+      "event_time": "2026-10-12T09:35:00+05:30",
+      "location": { "latitude": 19.1136, "longitude": 72.8697, "accuracy_m": 150, "place_id": "aq-station-andheri" },
+      "measurements": [
+        { "name": "pm25_concentration", "value": 74.5, "unit": "ug/m3", "aggregation": "average", "period_seconds": 3600 }
+      ],
+      "notes": "PM2.5 elevated."
+    },
+    {
+      "source_id": "traffic.replay",
+      "source_event_id": "scn-010",
+      "event_type": "traffic_speed_observed",
+      "event_time": "2026-10-12T09:38:00+05:30",
+      "location": { "latitude": 19.1136, "longitude": 72.8697, "place_id": "seg-subhas-nagar" },
+      "measurements": [
+        { "name": "speed", "value": 31.0, "unit": "km/h", "aggregation": "instantaneous" },
+        { "name": "free_flow_speed", "value": 50.0, "unit": "km/h", "aggregation": "instantaneous" },
+        { "name": "speed_ratio", "value": 0.62, "unit": "ratio", "aggregation": "instantaneous" }
+      ],
+      "notes": "Mild slowdown on adjacent segment."
+    },
+    {
+      "source_id": "citizen.replay",
+      "source_event_id": "scn-011",
+      "event_type": "road_blockage_reported",
+      "event_time": "2026-10-12T09:42:00+05:30",
+      "location": { "latitude": 19.1197, "longitude": 72.8464, "accuracy_m": 45 },
+      "area_reference": "Andheri Link Road",
+      "text": "Waterlogging near the junction, cars barely moving.",
+      "quality_flags": ["citizen_unverified"],
+      "notes": "Second independent reporter - distinct from scn-006, so it is not a duplicate."
+    },
+    {
+      "source_id": "traffic.replay",
+      "source_event_id": "scn-012",
+      "event_type": "traffic_speed_observed",
+      "event_time": "2026-10-12T09:45:00+05:30",
+      "location": { "latitude": 19.0544, "longitude": 72.8402, "place_id": "seg-powai" },
+      "measurements": [
+        { "name": "speed", "value": 48.0, "unit": "km/h", "aggregation": "instantaneous" },
+        { "name": "free_flow_speed", "value": 55.0, "unit": "km/h", "aggregation": "instantaneous" },
+        { "name": "speed_ratio", "value": 0.8727, "unit": "ratio", "aggregation": "instantaneous" }
+      ],
+      "notes": "Unrelated area, normal flow. Must NOT merge with the Andheri cluster."
+    }
+  ]
+}

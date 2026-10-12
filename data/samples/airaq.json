@@ -1,0 +1,40 @@
+{
+  "fixture": "air_quality",
+  "description": "Sanitised synthetic air-quality observations. Synthetic data - not live observations.",
+  "synthetic": true,
+  "events": [
+    {
+      "source_id": "airquality.replay",
+      "source_event_id": "aq-101",
+      "event_type": "air_quality_observed",
+      "event_time": "2026-10-12T08:45:00+05:30",
+      "location": { "latitude": 19.1136, "longitude": 72.8697, "accuracy_m": 150, "place_id": "aq-station-andheri" },
+      "measurements": [
+        { "name": "pm25_concentration", "value": 58.0, "unit": "ug/m3", "aggregation": "average", "period_seconds": 3600 }
+      ],
+      "notes": "PM2.5 elevated. No AQI is derived - raw concentration only."
+    },
+    {
+      "source_id": "airquality.replay",
+      "source_event_id": "aq-102",
+      "event_type": "air_quality_observed",
+      "event_time": "2026-10-12T09:10:00+05:30",
+      "location": { "latitude": 19.1136, "longitude": 72.8697, "accuracy_m": 150, "place_id": "aq-station-andheri" },
+      "measurements": [
+        { "name": "pm25_concentration", "value": 74.5, "unit": "ug/m3", "aggregation": "average", "period_seconds": 3600 }
+      ],
+      "notes": "PM2.5 rising during the rain event."
+    },
+    {
+      "source_id": "airquality.replay",
+      "source_event_id": "aq-103",
+      "event_type": "air_quality_observed",
+      "event_time": "2026-10-12T09:10:00+05:30",
+      "location": { "latitude": 19.0760, "longitude": 72.8777, "accuracy_m": 220, "place_id": "aq-station-andheri-east" },
+      "measurements": [
+        { "name": "pm10_concentration", "value": 121.0, "unit": "ug/m3", "aggregation": "average", "period_seconds": 3600 }
+      ],
+      "notes": "Second station. Deliberately nearby, not identical - supports later contradiction handling."
+    }
+  ]
+}

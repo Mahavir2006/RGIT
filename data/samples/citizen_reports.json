@@ -1,0 +1,30 @@
+{
+  "fixture": "citizen_reports",
+  "description": "Sanitised synthetic citizen reports. Synthetic data - not real reporters.",
+  "synthetic": true,
+  "reports": [
+    {
+      "report_category": "waterlogging",
+      "text": "Road near the metro station is under knee-deep water. Vehicles moving very slowly.",
+      "reported_at": "2026-10-12T09:12:00+05:30",
+      "location": { "latitude": 19.0760, "longitude": 72.8777, "accuracy_m": 30 },
+      "area_reference": "Andheri East",
+      "reporter_id": "reporter_a1"
+    },
+    {
+      "report_category": "road_blockage",
+      "text": "Waterlogging reported near the junction. Call me on 9876543210 for details.",
+      "reported_at": "2026-10-12T09:22:00+05:30",
+      "location": { "latitude": 19.1197, "longitude": 72.8464, "accuracy_m": 45 },
+      "area_reference": "Andheri Link Road",
+      "reporter_id": "reporter_b7"
+    },
+    {
+      "report_category": "other",
+      "text": "Streetlight flickering near the drain.",
+      "reported_at": "2026-10-12T09:40:00+05:30",
+      "area_reference": "Andheri East",
+      "reporter_id": "reporter_c3"
+    }
+  ]
+}

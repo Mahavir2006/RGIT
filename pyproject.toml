@@ -1,29 +1,37 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "urban-sentinel"
 version = "0.1.0"
-description = "Urban Sentinel multi-agent intelligence layer for incident fusion and cascading-risk analysis."
+description = "UrbanIncident Fusion & Causal Intelligence - ingestion subsystem (app/) and multi-agent intelligence layer (urban_sentinel/)"
+requires-python = ">=3.11"
 readme = "README.md"
-requires-python = ">=3.12"
 dependencies = [
-  "fastapi>=0.115.0",
-  "uvicorn[standard]>=0.32.0",
-  "pydantic>=2.9.0",
-  "pydantic-settings>=2.6.0",
-  "langgraph>=0.2.45",
-  "langchain-core>=0.3.0",
-  "httpx>=0.27.0",
-  "neo4j>=5.26.0",
-  "python-dotenv>=1.0.1",
+    "fastapi>=0.115,<1.0",
+    "uvicorn[standard]>=0.32,<1.0",
+    "pydantic>=2.9,<3.0",
+    "pydantic-settings>=2.6,<3.0",
+    "SQLAlchemy[asyncio]>=2.0.36,<2.1",
+    "asyncpg>=0.30,<1.0",
+    "aiosqlite>=0.20,<1.0",
+    "httpx>=0.27,<1.0",
+    "python-dateutil>=2.9,<3.0",
+    "alembic>=1.14,<2.0",
+    # intelligence layer (urban_sentinel/)
+    "langgraph>=0.2.45",
+    "langchain-core>=0.3.0",
+    "neo4j>=5.26.0",
+    "python-dotenv>=1.0.1",
 ]
 
 [project.optional-dependencies]
 dev = [
-  "pytest>=8.3.0",
-  "pytest-asyncio>=0.24.0",
+    "pytest>=8.3,<9.0",
+    "pytest-asyncio>=0.24,<1.0",
+    "pytest-cov>=6.0,<7.0",
+    "pytest-httpx>=0.35,<1.0",
 ]
 
 [project.scripts]
@@ -31,9 +39,17 @@ urban-sentinel = "urban_sentinel.api.main:run"
 urban-sentinel-demo = "urban_sentinel.demo.monsoon:main"
 
 [tool.setuptools.packages.find]
-include = ["urban_sentinel*"]
+include = ["app*", "urban_sentinel*"]
 
 [tool.pytest.ini_options]
-asyncio_mode = "auto"
 testpaths = ["tests"]
-filterwarnings = ["ignore::DeprecationWarning"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "-q --strict-markers"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["app/main.py", "*/migrations/*", "alembic/*"]

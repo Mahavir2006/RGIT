@@ -1,0 +1,9 @@
+station_id,station_name,observed_at,water_level,unit,latitude,longitude,datum,alert_threshold,threshold_unit,reporting_interval_seconds
+WGD-04,Andheri East Drain Gauge 04,2026-10-12T08:50:00+05:30,0.62,m,19.0760,72.8777,MSL,0.75,m,
+WGD-04,Andheri East Drain Gauge 04,2026-10-12T09:10:00+05:30,0.88,m,19.0760,72.8777,MSL,0.75,m,
+WGD-04,Andheri East Drain Gauge 04,2026-10-12T09:30:00+05:30,1.24,m,19.0760,72.8777,MSL,0.75,m,
+WGD-04,Andheri East Drain Gauge 04,2026-10-12T09:50:00+05:30,1.41,m,19.0760,72.8777,MSL,0.75,m,
+WGD-11,Subhas Nagar Gauge 11,2026-10-12T09:20:00+05:30,0.34,m,19.1136,72.8697,MSL,0.60,m,
+WGD-11,Subhas Nagar Gauge 11,2026-10-12T09:45:00+05:30,0.51,m,19.1136,72.8697,MSL,0.60,m,
+WGD-07,Powai Gauge 07,2026-10-12T09:30:00+05:30,0.12,m,19.0544,72.8402,MSL,0.50,m,
+WGD-09,Malad Gauge 09,2026-10-12T09:35:00+05:30,0.44,m,19.1885,72.8380,MSL,,,
