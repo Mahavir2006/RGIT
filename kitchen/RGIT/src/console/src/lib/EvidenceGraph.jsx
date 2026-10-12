@@ -11,7 +11,7 @@
 //
 // A keyboard-reachable table alternative is always available, since a graph alone is not a
 // sufficient substitute for a screen reader or for pointer-free operation.
-import { useMemo, useRef, useState, useCallback } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, PanelRightClose, Minimize2, GripVertical, X, Maximize2, Table2, Network
@@ -231,6 +231,16 @@ export default function EvidenceGraph({ store, incidentId, showContradictions, o
 
   const graph = useMemo(() => buildGraph(store, incidentId, { showContradictions }), [store, incidentId, showContradictions]);
   const base = useMemo(() => layoutGraph(graph.nodes, graph.links), [graph]);
+
+  // Open the graph at its overview framing: keep the incident at the top and centre the
+  // widest row in the available surface. This is also the first view reached from Graph
+  // Explorer in the sidebar, regardless of the previous route's scroll position.
+  useLayoutEffect(() => {
+    const element = surface.current;
+    if (!element) return;
+    element.scrollLeft = Math.max(0, (element.scrollWidth - element.clientWidth) / 2);
+    element.scrollTop = 0;
+  }, [incidentId, base.width]);
 
   const stats = useMemo(() => {
     const fanout = new Map();

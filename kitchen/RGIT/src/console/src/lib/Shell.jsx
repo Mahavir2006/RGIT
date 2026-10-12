@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Map, ListChecks, TriangleAlert, GitBranch, Waypoints,
   Rows3, Database, Settings, PanelLeftClose, PanelLeft, Search, Bell,
-  LogOut, ChevronDown, Check, Moon, Sun, ChefHat, Share2
+  LogOut, ChevronDown, Check, Moon, Sun, ChefHat, Share2, ScanSearch
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button, Input, Badge } from '@/components/ui';
@@ -34,7 +34,8 @@ const GROUPS = [
       { to: '/incidents/INC-104/evidence', label: 'Evidence & causes', icon: GitBranch },
       { to: '/graph', label: 'Graph explorer', icon: Share2 },
       { to: '/incidents/INC-104/cascade', label: 'Cascade risk', icon: Waypoints },
-      { to: '/kitchen', label: 'Agent floor', icon: ChefHat }
+      { to: '/kitchen', label: 'Agent floor', icon: ChefHat },
+      { to: '/verification', label: 'Verification', icon: ScanSearch }
     ]
   },
   {

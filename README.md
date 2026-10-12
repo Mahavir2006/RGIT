@@ -366,6 +366,7 @@ Errors use the same envelope with `error` populated:
 | `POST` | `/api/v1/ingest/{source}` | **write** | Trigger one ingestion run. `{source}` is a full id (`weather.live`, `airquality.live`, `traffic.live`, `water.dataset`, `citizen.manual`, `replay.all`) or an unambiguous alias (`weather`, `air_quality`, `traffic`, `water`, `citizen`, `replay`) |
 | `POST` | `/api/v1/events` | **write** | Submit canonical or manual events |
 | `POST` | `/api/v1/reports` | **write** | Submit a citizen report |
+| `POST` | `/api/v1/verification/image` | public or read-keyed | Bounded image triage with the optional XproAI checkpoint and C2PA SDK |
 | `GET` | `/api/v1/events` | public | Paginated/filtered event query |
 | `GET` | `/api/v1/events/{event_id}` | public | Event detail and provenance |
 | `GET` | `/api/v1/ingestion/runs` | public | Recent ingestion runs and outcomes |
@@ -407,6 +408,20 @@ curl "http://127.0.0.1:8000/api/v1/events?source_category=water&page=1&page_size
 ```bash
 curl http://127.0.0.1:8000/api/v1/sources/health
 ```
+
+### Image verification
+
+The console Verification page sends original image bytes to `POST /api/v1/verification/image`.
+The app uses the bundled `app/xproai_best.pt` by default; set `XPROAI_CHECKPOINT` only to use
+another XproAI v3 checkpoint. Install the optional
+dependencies with `pip install -e ".[image-verification]"`. The endpoint caps uploads at 15 MB
+and decoded images at 30 megapixels. C2PA verification uses the `c2pa-python` SDK; configure
+`C2PA_SETTINGS_FILE` with the SDK's trust settings when your deployment needs an explicit trust
+store. Claims are treated as cryptographically verified only when the SDK reports a valid state.
+
+The supplied v3 CNN is marked retired by its source project and has poor reported real-world
+performance. Its score is displayed only as a review indicator; all uploaded evidence remains
+subject to human verification. No C2PA manifest is not evidence that an image is authentic.
 
 ---
 

@@ -12,6 +12,7 @@ langgraph>=0.2.45
 langchain-core>=0.3.0
 neo4j>=5.26.0
 python-dotenv>=1.0.1
+python-multipart>=0.0.20,<1.0
 
 pytest>=8.3,<9.0
 pytest-asyncio>=0.24,<1.0

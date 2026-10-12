@@ -15,6 +15,7 @@ import Sources from './routes/Sources.jsx';
 import Settings from './routes/Settings.jsx';
 import Kitchen from './routes/Kitchen.jsx';
 import Graph from './routes/Graph.jsx';
+import Verification from './routes/Verification.jsx';
 
 export default function App() {
   const { signedIn } = useApp();
@@ -42,6 +43,7 @@ export default function App() {
           {/* The agent floor is reachable at both the console path and the /app prefix. */}
           <Route path="/kitchen" element={<Kitchen />} />
           <Route path="/app/kitchen" element={<Kitchen />} />
+          <Route path="/verification" element={<Verification />} />
           <Route path="*" element={<Navigate to="/overview" replace />} />
         </Routes>
       </AnimatePresence>
