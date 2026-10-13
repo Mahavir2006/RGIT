@@ -1,0 +1,535 @@
+URBAN SENTINEL + DAILY DESIGN .ART
+FEATURE GUIDE
+
+Prepared: 13 October 2026
+Repository: RGIT
+
+PURPOSE OF THIS GUIDE
+=====================
+This guide describes the capabilities present in the repository: what each feature does,
+how its main path works, and why it exists. It covers both parts of the product: the
+Urban Sentinel incident console and API, and the branded Daily Design .Art WebGL website
+that shares the same local web server. It distinguishes working backend paths from demo
+data and integrations that still need deployment configuration.
+
+PRODUCT AT A GLANCE
+===================
+Urban Sentinel is an incident decision-support system. It collects reports and sensor or
+vision observations, validates and stores them, looks for anomalies and related events,
+groups evidence into provisional incidents, and can run a specialist analysis workflow.
+The workflow can suggest causes, affected services, response options, and the department
+that should receive a report. Operators retain responsibility for review and submission.
+
+The project also contains a separate branded WebGL experience, Daily Design .Art. The
+Node.js service serves both experiences: the public WebGL site at / and the operational
+console at /overview. The FastAPI API runs separately.
+
+
+1. OPERATIONAL CONSOLE AND NAVIGATION
+====================================
+What it does
+------------
+The console provides screens for overview, live operations, incidents, evidence, causal
+graphs, cascade analysis, response, events, data sources, settings, agent workflow, crowd
+analysis, traffic analysis, and private report tracking. The sidebar groups these into
+Operate, Investigate, and Platform areas. Operators can collapse the sidebar, use the
+dark/light theme control, and navigate directly to supported deep links.
+
+How it works
+------------
+The React application defines routes for /overview, /operations, /incidents, incident
+detail and evidence pages, /graph, /response, /events, /sources, /settings, /kitchen,
+/crowd, /traffic, and /track-report. The Node server serves the console's built HTML for
+these routes, so refreshing a deep link still opens the console.
+
+Why it is needed
+----------------
+Incident response is spread across monitoring, investigation, analysis, and follow-up.
+Putting these tasks in one navigation system helps an operator move from an alert to its
+evidence and then to an accountable response without losing incident context.
+
+Important operating note
+------------------------
+Some console views are driven by a fixed, labelled synthetic replay scenario. A polished
+screen does not by itself mean that its displayed values are live from sensors. The
+scenario data is deliberately deterministic so the interface can demonstrate the same
+incident consistently. The API ingestion and processing paths are implemented separately;
+each screen's data connection must be understood from its own integration before using
+it as a live operations display.
+
+
+2. OVERVIEW AND OPERATIONS MAP
+==============================
+What it does
+------------
+Overview and live operations give the operator a starting point for current incident
+context, monitored areas, source health, incident markers, and operational summaries.
+The map and its filters help relate reports to geography rather than treating every event
+as an isolated row.
+
+How it works
+------------
+The console includes map components, area and source filters, incident indicators, and
+scenario data for locations and events. The operations screen uses a full-screen map view;
+the state shown by the seeded scenario is labelled as synthetic/replay in the interface.
+
+Why it is needed
+----------------
+Location, proximity, and affected-area context are central to deciding whether two
+signals are related and which responders or infrastructure may be affected. A map helps
+operators spot spatial patterns and narrow their investigation.
+
+
+3. DATA CONNECTORS AND INGESTION
+===============================
+What it does
+------------
+The backend has adapters for weather, air quality, traffic APIs, water-level datasets,
+citizen reports, replay fixtures, and crowd observations. Separate analysis endpoints
+process crowd and traffic videos. Adapters convert supported source inputs into the
+system's canonical event format. The source catalogue reports adapter mode and whether a
+live credential is configured without exposing credential values.
+
+How it works
+------------
+An ingestion run resolves a source identifier, fetches observations, records the run and
+its outcome, validates each event, and persists accepted records. The source health service
+tracks freshness, recent failures, and status. One source failing is isolated from other
+sources. Replay fixtures provide repeatable input for local development and demonstration.
+Periodic polling is disabled by default so development does not unexpectedly use paid
+provider quotas.
+
+Why it is needed
+----------------
+Urban incidents rarely have one complete source of truth. Weather, roads, water systems,
+camera analysis, and resident reports contribute different pieces of evidence. A shared
+adapter contract lets the rest of the system process those inputs consistently.
+
+Current boundaries
+------------------
+Live weather, air-quality, and traffic providers require valid provider credentials and
+configuration. Without them, those adapters cannot provide live observations. Water
+levels can use the bundled dataset. Replay is available for repeatable demonstrations.
+The project does not claim live external feeds are working merely because an adapter is
+present.
+
+
+4. CANONICAL EVENTS, VALIDATION, DEDUPLICATION, AND STORAGE
+==========================================================
+What it does
+------------
+Every accepted observation is represented as a versioned event with source identity,
+event time, ingestion time, event type, optional location, measurements with units, quality
+flags, and provenance. Invalid or suspicious records can be rejected or quarantined with
+machine-readable reason codes. Repeated deliveries are linked to the original event
+rather than counted as independent corroboration.
+
+How it works
+------------
+Pydantic schemas enforce the event contract and its invariants. Timestamps are normalized
+with their observed time kept distinct from the time received. Units are retained rather
+than silently mixed, and missing measurements are not changed into zero. Stable event
+fingerprints and database uniqueness constraints provide idempotency. Late or out-of-order
+events can be accepted while preserving their original event time. The persistence layer
+uses SQLAlchemy and Alembic; local configuration can use SQLite, while PostgreSQL is the
+documented deployment option.
+
+Why it is needed
+----------------
+If two providers describe the same event differently, downstream analysis needs a common
+shape. Validation prevents malformed data from looking credible; deduplication prevents a
+repeated transmission from falsely increasing confidence; and provenance lets a reviewer
+trace a conclusion to its source.
+
+
+5. DETERMINISTIC PROCESSING AND ANOMALIES
+========================================
+What it does
+------------
+After ingestion, processing can assess data quality, calculate configured anomaly
+findings, correlate observations, and produce ranked candidate incident matches. It also
+records processing runs and exposes anomaly and processing endpoints for review.
+
+How it works
+------------
+Rule-based checks cover configured thresholds, rates of change, baselines, stale sources,
+sensor faults, malformed data, and related quality conditions. Rules compare compatible
+units and observation periods. Environmental anomalies are kept distinct from sensor
+health anomalies: a dead or implausible sensor is an observability issue, not proof that
+the physical hazard occurred. Candidate matches use features such as time, geography,
+event type, asset, and quality. Their scores are heuristics, not probabilities. Ambiguous
+matches are retained for review rather than silently merged.
+
+Why it is needed
+----------------
+Raw measurements are noisy and sometimes contradictory. Deterministic checks make the
+initial screening repeatable and explainable, while surfacing bad sensors prevents missing
+data from being mistaken for safety.
+
+
+6. INCIDENTS, EVIDENCE, AND PROVENANCE
+======================================
+What it does
+------------
+Related events can be associated with provisional incident clusters. Incident detail
+includes member evidence and candidate associations. The console offers evidence and graph
+views to inspect which records support or contradict an explanation and to follow links
+between incidents, events, assets, and dependencies.
+
+How it works
+------------
+The deterministic matcher ranks candidate incidents and records its score components,
+reason, and recommended next step. The intelligence layer can add hypotheses and graph
+context. If the optional Neo4j graph is unavailable, the workflow marks graph evidence as
+degraded and does not fabricate graph links. Provisional clusters are explicitly not
+confirmed incidents.
+
+Why it is needed
+----------------
+An operator needs to know not only that an alert exists, but also what evidence connects
+it to other reports, what disagrees, and where uncertainty remains. Exposing the chain
+behind a conclusion supports review and helps avoid false merges.
+
+
+7. MULTI-SPECIALIST AI / INTELLIGENCE WORKFLOW
+=============================================
+What it does
+------------
+The backend includes an orchestrated workflow for signal intelligence, incident fusion,
+causal and cascade analysis, impact and response, and department reporting. The /kitchen
+agent floor visualizes workflow stages and their hand-offs; backend workflow endpoints
+can start an analysis and return its status and outputs.
+
+How it works
+------------
+The workflow validates its input, retrieves available incident context, conditionally
+runs specialist stages, validates structured outputs, persists results, and consolidates
+an operator summary. It records per-agent run status, timing, retries, errors, and whether
+a deterministic fallback was used. The specialist responsibilities are:
+
+  - Signal intelligence summarizes processed observations, anomalies, and source
+    reliability. It must reference supplied evidence rather than inventing new events.
+  - Incident fusion considers whether evidence belongs to an existing incident, should
+    start a provisional incident, or needs human review. Ambiguity is preserved.
+  - Causal analysis keeps competing explanations, supporting and contradicting events,
+    assumptions, evidence gaps, and cascade scenarios visible.
+  - Impact and response estimates severity from deterministic features and ranks options
+    from a validated catalogue. Recommendations require human approval.
+  - Department reporting turns evidence and hypotheses into reviewable, department-specific
+    report drafts.
+
+Why it is needed
+----------------
+Different reasoning tasks have different evidence and safety constraints. A staged
+workflow makes it possible to inspect each contribution, preserve specialist outputs, and
+avoid turning a single opaque answer into an operational decision.
+
+AI and safety boundary
+----------------------
+An LLM provider is optional. When it is not configured or returns unusable output, the
+workflow uses deterministic fallbacks. The default project configuration does not enable
+automatic LLM analysis for every incident. Scores and hypotheses are decision support, not
+proof or a substitute for a trained human reviewer. Recommendations do not dispatch crews,
+close roads, or operate infrastructure.
+
+
+8. CAUSAL HYPOTHESES AND CASCADE RISK
+====================================
+What it does
+------------
+For an analyzed incident, the system can list hypotheses, evidence gaps, cascade scenarios,
+and dependency paths. The interface is designed to show alternatives and uncertainty,
+not just a single asserted cause.
+
+How it works
+------------
+The causal stage uses processed event types, source health, existing graph context when
+available, and configured workflow logic. It can describe how an initial hazard could
+affect dependent assets or services. Each hypothesis carries evidence references,
+assumptions, alternatives, and limitations. Graph connectivity by itself is not treated as
+causal proof.
+
+Why it is needed
+----------------
+An initial incident can trigger secondary failures. Showing plausible downstream effects
+helps responders prioritize observation and mitigation while keeping the distinction
+between a supported hypothesis and a confirmed cause clear.
+
+
+9. DEPARTMENT REPORTING AND DELIVERY LIFECYCLE
+=============================================
+What it does
+------------
+The department reporting agent prepares evidence-linked drafts for the department most
+relevant to a suspected infrastructure or service issue. Supported department identifiers
+include drainage, water_resources, roads_traffic, environment, and
+emergency_management. The system records status and can deliver a confirmed report to a
+department HTTPS webhook.
+
+How it works
+------------
+Routing examines hypothesis claims, incident assets and descriptions, event text and
+attributes, and finally event type when needed. A draft records its department, routing
+reason, confidence, incident location, linked evidence, alternatives, and unresolved
+uncertainties. If evidence does not support a department, the report remains unassigned
+instead of inventing a recipient. A reviewer may change the recipient and must explicitly
+confirm submission. The API records a durable report, attempts delivery through the
+configured webhook, records delivery success or failure, and supports retry. A configured
+department can send authenticated status callbacks such as acknowledged, in progress, or
+resolved. A private bearer-token tracking link exposes the resident-safe status history.
+
+Why it is needed
+----------------
+Correctly identifying a problem is not enough if no accountable team receives it. Explicit
+department routing helps avoid sending a drainage fault to an unrelated department and
+creates a traceable hand-off and follow-up path.
+
+Deployment requirement and UI boundary
+--------------------------------------
+Real outbound delivery requires department webhook URLs and appropriate callback/update
+tokens in the deployment environment. These endpoints are not supplied by the repository.
+Without them, a report cannot be delivered to a real department. The backend report
+lifecycle and APIs exist, but the Response Center currently labels delivery as not
+configured and its sample report interactions are local preview state; do not interpret
+the preview's “queued locally” state as external receipt. The standalone tracking page
+uses the backend's token-protected status endpoint when given a valid tracking link.
+
+
+10. CROWD GATHERING VIDEO ANALYSIS
+================================
+What it does
+------------
+The /crowd page and API analyze a bundled or uploaded video for head detections and crowd
+density over time. Results can include counts, density, peak periods, rolling trends, and
+surge indicators. An annotated video can be streamed for visual inspection.
+
+How it works
+------------
+The crowd adapter runs an ONNX detection model on sampled frames. The analysis endpoint
+accepts an upload or uses the bundled protest fixture, applies bounded sampling and
+confidence settings, and returns a timeline. A related source adapter can emit canonical
+crowd observations for downstream processing.
+
+Why it is needed
+----------------
+Large gatherings and sudden increases in crowd density may affect safety, access, and
+resource needs. A timeline makes changes easier to spot than a single manual observation.
+
+Boundary
+--------
+Detection estimates are subject to camera angle, occlusion, frame sampling, and model
+limits. They are observations for review, not identification of individuals or a final
+assessment of safety.
+
+
+11. TRAFFIC AND VEHICLE VIDEO ANALYSIS
+=====================================
+What it does
+------------
+The /traffic page and API analyze vehicle flow from a bundled or uploaded traffic video.
+They report per-class counts, flow over time, congestion levels, and possible bottlenecks.
+An annotated video can show detected vehicles.
+
+How it works
+------------
+An ONNX vehicle detector processes sampled frames and categorizes supported classes,
+including cars, buses, motorcycles, trucks, and other configured vehicle classes. The
+analysis can derive a passenger-car-unit weighted flow estimate for review.
+
+Why it is needed
+----------------
+Traffic disruption can be both an incident signal and a barrier to emergency access.
+Vehicle mix and congestion trends can give operators more useful context than a simple
+“road busy” flag.
+
+Boundary
+--------
+Video analysis is not a live citywide traffic feed unless a camera source is explicitly
+connected. Results depend on the supplied footage, frame sampling, and model performance.
+
+
+12. IMAGE VERIFICATION AND EVIDENCE TRIAGE
+=========================================
+What it does
+------------
+The Verification page can inspect an uploaded image for a legacy model score and embedded
+C2PA provenance claims. The API limits upload size and decoded image dimensions, and
+reports whether a signed provenance manifest was found and validated.
+
+How it works
+------------
+The image is decoded and checked against the size limits. If the configured XproAI
+checkpoint and optional image dependencies are available, the model produces a triage
+indicator. The C2PA SDK checks embedded claims and trust state when installed and
+configured. The output explicitly requires human review.
+
+Why it is needed
+----------------
+Images may be useful incident evidence, but their origin and integrity can be uncertain.
+Triage and provenance information give a reviewer additional context before relying on an
+image.
+
+Boundary
+--------
+The included XproAI checkpoint is legacy/retired and its score is not a probability that
+an image or report is false. No C2PA manifest does not prove authenticity. A claim is
+cryptographically verified only if the SDK reports a valid trusted state. Optional
+dependencies and trust configuration may be required for this feature to run fully.
+
+
+13. EVENT EXPLORER, SOURCE HEALTH, SETTINGS, AND AUDIT
+====================================================
+What it does
+------------
+The platform screens provide ways to inspect individual events and processing history,
+see registered sources and their health/freshness, and review application settings or
+audit-related context. Backend APIs expose event queries and provenance, ingestion runs,
+source status, processing runs, incident candidates, and anomaly records.
+
+How it works
+------------
+API responses use structured envelopes with request identifiers, timestamps, and explicit
+errors. Read endpoints are generally public in the local configuration; state-changing
+ingestion and event/report operations require the configured write key. Reviewer-only
+department operations use a separate reviewer credential. Logs use structured records and
+redact configured secrets.
+
+Why it is needed
+----------------
+Operators and maintainers need to distinguish source outages from real-world events,
+trace how a record was processed, understand why an item was rejected, and investigate
+who changed a report or workflow state.
+
+
+14. CITIZEN REPORTS AND PRIVATE TRACKING
+=======================================
+What it does
+------------
+Residents can submit a report through the report API, and a submitted department report
+can be followed through a private status page. The tracking page can show the assigned
+department, delivery state, timestamps, external reference, and status history.
+
+How it works
+------------
+The report submission endpoint validates the report and stores it as a canonical event.
+Department tracking uses a high-entropy bearer token; the database stores its hash, while
+the tracking link carries the token in the URL fragment so it is not sent as a normal
+server path. The tracking API returns a privacy-limited view and omits internal actor
+identity from status history.
+
+Why it is needed
+----------------
+People who report a local issue need a way to know that it reached the right service and
+whether anyone has acknowledged or resolved it. A private tracking token enables that
+follow-up without exposing the report to arbitrary visitors.
+
+
+15. DAM FAILURE NAVIGATION
+=========================
+What it does
+------------
+The console sidebar includes a “Dam Failure” link to https://yekyahai.vercel.app/.
+
+How it works
+------------
+It is a regular external navigation link. Selecting it opens the separate Dam Failure
+site; it is not an internal console route and does not transfer incident data between the
+two sites.
+
+Why it is needed
+----------------
+It provides a direct path from the Urban Sentinel overview to the related dam-failure
+experience requested for this project.
+
+
+16. DAILY DESIGN .ART WEBGL WEBSITE
+==================================
+What it does
+------------
+The repository also contains a branded interactive design portfolio based on the included
+Active Theory WebGL runtime. It has continuous Home, About, Work, TreeScene, CleanRoom, and
+Footer scenes; a collection of UI/UX studies; work search and filtering; project details;
+responsive desktop/mobile interactions; and a custom 3D D brand mark.
+
+How it works
+------------
+Scroll, pointer, and touch input drive scene progression and camera movement. WebGL and
+GLSL render the optical materials, refraction, particles, fluid effects, and transitions.
+The project content is adapted through src/content.mjs and built into public assets. The
+Node service serves static assets, deep links, byte-range media, a local keyword-search
+endpoint, and a WebSocket room protocol for synchronized sessions.
+
+Why it is needed
+----------------
+This experience is the public-facing visual and design side of the project. It makes the
+brand and work explorable while keeping the incident-response console available as a
+separate application area on the same local server.
+
+Boundary
+--------
+The search endpoint performs local keyword matching; it is not a hosted AI assistant.
+WebSocket rooms and search state are held in process memory and reset when the Node
+service restarts. Private services from the original site are not included.
+
+
+17. SECURITY, CONFIGURATION, AND DEPLOYMENT NEEDS
+================================================
+Implemented safeguards include API-key checks on write operations, reviewer checks on
+department approval/routing operations, separate department callback credentials,
+hashed report-tracking tokens, request correlation identifiers, structured logging,
+secret redaction, schema validation, upload bounds, and explicit delivery status.
+
+Before treating a deployment as a live end-to-end service, configure and verify:
+
+  1. Live provider API keys and locations/segments for the feeds that should be live.
+  2. A persistent production database and migration procedure.
+  3. Reviewer and write credentials appropriate to the deployment.
+  4. Department HTTPS webhook URLs, delivery credentials, callback tokens, and a public
+     API base URL if department delivery and callbacks are required.
+  5. An LLM provider only if language-model analysis is desired; the deterministic fallback
+     remains available without one.
+  6. Neo4j only if graph-backed dependency context is required.
+  7. C2PA trust settings and optional image dependencies if image verification is required.
+  8. A deliberate decision about which console pages should consume live APIs rather than
+     the included deterministic demonstration scenario.
+
+The system is decision support. Human review remains necessary for incident confirmation,
+cause assessment, department routing, report submission, and response actions.
+
+
+18. RUNNING THE PROJECT LOCALLY
+==============================
+With frontend dependencies and the Python environment installed, start the web server
+from the repository root:
+
+  npm run dev
+
+Open the public WebGL experience at:
+  http://localhost:4199/
+
+Open the Urban Sentinel console at:
+  http://localhost:4199/overview
+
+Start the FastAPI backend in a second terminal:
+  .venv\Scripts\uvicorn.exe app.main:app --host 127.0.0.1 --port 8000
+
+API health and interactive documentation:
+  http://127.0.0.1:8000/health
+  http://127.0.0.1:8000/docs
+
+The backend uses the local configured database and available model/provider settings. A
+healthy local API does not imply external data feeds or department webhooks are configured.
+
+
+SOURCE MAP
+==========
+Core API and ingestion:       app/main.py, app/api/, app/ingestion/
+Processing and matching:     app/processing/, app/services/
+Intelligence workflow:       urban_sentinel/intelligence/, urban_sentinel/api/
+Department directory:        urban_sentinel/domain/departments.py
+Console routes and layout:   src/console/src/App.jsx, src/console/src/lib/Shell.jsx
+WebGL website content:       src/content.mjs, scripts/, vendor/activetheory/
+Local web server:            scripts/server.mjs
+Project documentation:      README.md, kitchen/RGIT/README.md
+
+END OF GUIDE

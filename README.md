@@ -1,33 +1,27 @@
-# Urban Sentinel — Milestone 1: FastAPI + Multi-Source Event Ingestion
+# Urban Sentinel — Incident Intelligence and Response Platform
 
 **UrbanIncident Fusion & Causal Intelligence**
 
-An uncertainty-aware urban incident engine that fuses heterogeneous, time-stamped signals into
-evolving incidents, keeps competing explanations visible, estimates cascade risk, and explains
-evidence-backed interventions.
+Urban Sentinel brings together multi-source event ingestion, deterministic validation and
+processing, provisional incident matching, specialist intelligence workflows, and a
+reviewable department-report lifecycle. A companion Daily Design .Art WebGL experience is
+also included in this repository.
 
-> **Status: Milestone 1 only.** This repository currently implements the *ingestion and
-> canonicalisation* subsystem: the FastAPI application, the versioned canonical event contract,
-> five source adapters (weather, air quality, traffic, water levels, citizen reports), a
-> deterministic replay engine, idempotent PostgreSQL persistence, source-health tracking, and
-> ingestion-run accounting.
->
-> **Anomaly detection, incident clustering/fusion, causal inference, cascade-risk prediction,
-> the Neo4j evidence graph, and LangGraph agents are NOT implemented.** See
-> [Scope status](#12-scope-status--what-is-and-is-not-implemented). Nothing in this codebase
-> reports those capabilities as working.
+The FastAPI application in `app/` wires the ingestion, processing, and `urban_sentinel/`
+intelligence packages into one service. The React operations console and WebGL website are
+served by the Node.js application. Some console screens intentionally use a labelled,
+deterministic synthetic scenario; live providers and external department delivery require
+deployment configuration. See the [complete feature guide](docs/FEATURES_GUIDE.txt) for
+feature purposes, implementation flow, and current integration boundaries.
 
-> **This repository contains two subsystems, each a separate FastAPI app:**
->
-> | Package | Subsystem | Start | Tests |
-> |---|---|---|---|
-> | `app/` | Milestone 1 — multi-source event ingestion (this document, §1–14) | `uvicorn app.main:app --port 8000` | `tests/*.py` |
-> | `urban_sentinel/` | Multi-agent intelligence layer (LangGraph) — see [Part 2](#part-2--multi-agent-intelligence-layer) | `uvicorn urban_sentinel.api.main:app --port 8001` | `tests/intelligence/` |
->
-> **They are now wired into one pipeline served by `app.main`:**
-> ingestion → deterministic processing (`app/processing/`) → intelligence layer (mounted
-> in-process). See [Part 1b](#part-1b--deterministic-processing-and-wiring).
-> `python -m pytest` runs every suite (269 tests).
+| Package | Purpose | Local entry |
+|---|---|---|
+| `app/` | FastAPI ingestion, canonical events, processing, API and intelligence integration | `http://127.0.0.1:8000/docs` |
+| `urban_sentinel/` | Multi-agent workflow, hypotheses, recommendations, department reports and delivery lifecycle, mounted into `app.main` | `http://127.0.0.1:8000/api/v1/intelligence/workflows/latest` |
+| `src/console/` | Urban Sentinel operator console | `http://localhost:4199/overview` |
+| `src/` and `vendor/activetheory/` | Daily Design .Art WebGL experience | `http://localhost:4199/` |
+
+Run `npm run dev` for the web application and `.venv\\Scripts\\uvicorn.exe app.main:app --host 127.0.0.1 --port 8000` for the API.
 
 ---
 
